@@ -202,11 +202,12 @@ class PageController extends Controller
     {
         $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
 
-    // Lấy danh mục sản phẩm
+    // Lấy danh mục sản phẩm và thành phố từ database
     $category = DB::table('category')->get();
+    $city = DB::table('city')->get();  // Lấy thông tin thành phố từ bảng `city`
 
-    // Trả về view giỏ hàng với dữ liệu giỏ hàng từ cookie
-    return view('pages.Product.giohang', compact('category', 'cart')); 
+    // Trả về view giỏ hàng với dữ liệu giỏ hàng từ cookie và các danh mục thành phố
+    return view('pages.Product.giohang', compact('category', 'cart', 'city'));
     }
 
     public function getdeletecart(Request $request)
