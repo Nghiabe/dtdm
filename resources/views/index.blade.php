@@ -11,6 +11,8 @@
 
     <link rel="stylesheet" href="Asset/css/open-iconic-bootstrap.min.css">
     <link rel="stylesheet" href="Asset/css/animate.css">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
 
     <link rel="stylesheet" href="Asset/css/owl.carousel.min.css">
     <link rel="stylesheet" href="Asset/css/owl.theme.default.min.css">
