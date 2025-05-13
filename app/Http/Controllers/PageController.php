@@ -185,7 +185,7 @@ class PageController extends Controller
     }
     public function getaddtocart(Request $request, $id)
 {
-     $product = DB::table('products')->where('product_id', $id)->first();
+      $product = DB::table('products')->where('product_id', $id)->first();
 
     if (!$product) {
         return response()->json([
