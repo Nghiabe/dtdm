@@ -47,26 +47,32 @@ function add_wistlist(clicked_id){
 
 }
 
-function addtocart(event){
+function addtocart(event) {
     event.preventDefault();
+
+    // Sử dụng this đúng cách để lấy URL
     let urlCart = $(this).data('url');
-  $.ajax({
-    type:'GET',
-    url:urlCart,
-    dataType: 'json',
-    success:function(data){
-        if(data.code ===200){
-            alert('Thêm sản phẩm vào giỏ hàng thành công')
-        }
 
-    },
-    error:function(){
-
+    // Kiểm tra xem URL có tồn tại không
+    if (urlCart) {
+        $.ajax({
+            type: 'GET',
+            url: urlCart,
+            dataType: 'json',
+            success: function (data) {
+                if (data.code === 200) {
+                    // Hiển thị thông báo thành công
+                    alert('Thêm sản phẩm vào giỏ hàng thành công');
+                } else {
+                    alert('Lỗi khi thêm sản phẩm vào giỏ hàng');
+                }
+            },
+            error: function () {
+                alert('Đã có lỗi xảy ra. Vui lòng thử lại.');
+            }
+        });
     }
-  });
-
 }
-
 $(function()
 {
    $('.updatecart').on('click',updatecart );
