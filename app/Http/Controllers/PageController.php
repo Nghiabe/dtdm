@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model\Product;
 use DB;
 use Illuminate\Support\Facades\Mail;
 use App\Models\City;
+use Illuminate\Support\Facades\Cookie;
 use App\Models\Province;
 use App\Models\Wards;
 use App\Models\Freeship;
@@ -162,82 +163,107 @@ class PageController extends Controller
     public function getaddtocart($id)
 
     {
-        $product =DB::table('products')->where('product_id',$id)->first();
-     $cart = session()-> get('cart');
-     if(isset($cart[$id])){
-        $cart[$id]['quantity'] = $cart[$id]['quantity']+1;
+       $product = DB::table('products')->where('product_id', $id)->first();
 
-     }else{
-        $cart[$id]=[
-            'name' =>$product->Title,
-            'price' =>$product->Discount,
-            'quantity'=>1,
-            'image'=>$product->Thumbnail
+    // Lấy giỏ hàng từ cookie (nếu có)
+    $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
 
+    // Kiểm tra nếu sản phẩm đã có trong giỏ hàng
+    if (isset($cart[$id])) {
+        // Tăng số lượng sản phẩm trong giỏ hàng
+        $cart[$id]['quantity'] = $cart[$id]['quantity'] + 1;
+    } else {
+        // Thêm sản phẩm mới vào giỏ hàng
+        $cart[$id] = [
+            'name' => $product->Title,
+            'price' => $product->Discount,
+            'quantity' => 1,
+            'image' => $product->Thumbnail
         ];
     }
-        session()->put('cart',$cart);
-        return response()->json([
-                'code'=>200,
-                'massage'=>'success'
-            ], 200);
 
+    // Lưu giỏ hàng vào cookie (thời gian lưu cookie là 30 ngày)
+    Cookie::queue('cart', json_encode($cart), 60 * 24 * 30); // cookie sẽ tồn tại trong 30 ngày
+
+    return response()->json([
+        'code' => 200,
+        'message' => 'Product added to cart successfully'
+    ], 200);
 }
 public function getgiohang()
 {
-    $category = DB::table('category') ->get();
-    $carts = session()->get('cart');
-    $city = City::orderby('matp','ASC')->get();
-    $province = Province::orderby('maqh','ASC')->get();
-    $wards = Wards::orderby('xaid','ASC')->get();
-    return view('pages.Product.giohang', compact('category', 'carts', 'city', 'province','wards' ));
+     $category = DB::table('category')->get();
+
+    // Lấy giỏ hàng từ cookie (nếu có)
+    $carts = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
+
+    // Lấy thông tin các thành phố, tỉnh, và xã/phường từ các bảng tương ứng
+    $city = City::orderby('matp', 'ASC')->get();
+    $province = Province::orderby('maqh', 'ASC')->get();
+    $wards = Wards::orderby('xaid', 'ASC')->get();
+
+    // Trả về view giỏ hàng với tất cả dữ liệu đã lấy
+    return view('pages.Product.giohang', compact('category', 'carts', 'city', 'province', 'wards'));
 }
 public function postgiohang(Request $Request)
 {
-    if ($Request->isMethod('post')){
+   if ($Request->isMethod('post')){
 
-        $validator = Validator ::make($Request->all(),[
-            'wards'=>'required',
-                'province'=>'required',
-                'city'=>'required',
+        // Validate các trường nhập liệu
+        $validator = Validator::make($Request->all(), [
+            'wards' => 'required',
+            'province' => 'required',
+            'city' => 'required',
         ], [
             'province.required' => 'Trường này là trường bắt buộc',
             'wards.required' => 'Trường này là trường bắt buộc',
             'city.required' => 'Trường này là trường bắt buộc',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return redirect()->back()
-            ->withErrors($validator)
-            ->withInput();
-
+                ->withErrors($validator)
+                ->withInput();
         }
-        $allRequest  = $Request->all();
 
-                $coupon = $allRequest['coupon'];
-                $matp = $allRequest['city'];
-                $maqh = $allRequest['province'];
-                $xaid = $allRequest['wards'];
-                $wards = Wards::where('xaid',$allRequest['wards'])->first();
-                $province = Province::where('maqh',$allRequest['province'])->first();
-                $city = City::where('matp',$allRequest['city'])->first();
-                $add= implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
-                Session::put('add',$add);
-                Session::save();
-            if($matp){
-                $feeship = Freeship::where('fee_matp',$matp)->where('fee_maqh',$maqh)->where('fee_xaid',$xaid)->get();
-                $coupon = Coupon::where('coupon_code',$coupon)->get();
+        // Lấy tất cả dữ liệu từ form
+        $allRequest = $Request->all();
 
-                foreach($feeship as $key=> $fee){
-                    Session::put('fee',$fee->fee_feeship);
-                    Session::save();
-                }
-                foreach($coupon as $key=> $cou){
-                    Session::put('cou',$cou->coupon_number);
-                    Session::save();
-                }
+        // Lấy các giá trị từ request
+        $coupon = $allRequest['coupon'];
+        $matp = $allRequest['city'];
+        $maqh = $allRequest['province'];
+        $xaid = $allRequest['wards'];
 
-                return Redirect::to('thanhtoan');
+        // Lấy thông tin địa chỉ từ các bảng
+        $wards = Wards::where('xaid', $allRequest['wards'])->first();
+        $province = Province::where('maqh', $allRequest['province'])->first();
+        $city = City::where('matp', $allRequest['city'])->first();
+
+        // Kết hợp địa chỉ thành một chuỗi
+        $add = implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
+
+        // Lưu địa chỉ vào cookie
+        Cookie::queue('add', $add, 60 * 24 * 30);  // cookie sẽ tồn tại trong 30 ngày
+
+        // Xử lý phí vận chuyển và mã giảm giá
+        if ($matp) {
+            // Lấy phí vận chuyển và mã giảm giá từ database
+            $feeship = Freeship::where('fee_matp', $matp)->where('fee_maqh', $maqh)->where('fee_xaid', $xaid)->get();
+            $couponData = Coupon::where('coupon_code', $coupon)->get();
+
+            // Lưu phí vận chuyển vào cookie
+            foreach ($feeship as $fee) {
+                Cookie::queue('fee', $fee->fee_feeship, 60 * 24 * 30);  // Lưu cookie trong 30 ngày
+            }
+
+            // Lưu mã giảm giá vào cookie
+            foreach ($couponData as $cou) {
+                Cookie::queue('cou', $cou->coupon_number, 60 * 24 * 30);  // Lưu cookie trong 30 ngày
+            }
+
+            // Chuyển hướng tới trang thanh toán
+            return Redirect::to('thanhtoan');
 
 
 }
@@ -249,13 +275,26 @@ public function postgiohang(Request $Request)
 public function getdeletecart( Request $request)
 {
     if($request->id){
-        $carts = session()->get('cart');
+        // Lấy giỏ hàng từ cookie
+        $carts = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
+
+        // Xóa sản phẩm khỏi giỏ hàng
         unset($carts[$request->id]);
-        session()->put('cart', $carts);
-        $carts = session()->get('cart');
-        $category = DB::table('category') ->get();
-        $dete = view('pages.Product.giohang', compact('carts','category'))->render();
-        return response()->json(['cart_component' =>$dete, 'code'=>200],200);
+
+        // Lưu lại giỏ hàng đã cập nhật vào cookie (thời gian lưu cookie là 30 ngày)
+        Cookie::queue('cart', json_encode($carts), 60 * 24 * 30);
+
+        // Lấy lại giỏ hàng sau khi đã xóa
+        $carts = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
+
+        // Lấy danh mục sản phẩm từ database
+        $category = DB::table('category')->get();
+
+        // Render lại giỏ hàng sau khi cập nhật
+        $dete = view('pages.Product.giohang', compact('carts', 'category'))->render();
+
+        // Trả về phản hồi JSON với giỏ hàng cập nhật
+        return response()->json(['cart_component' => $dete, 'code' => 200], 200);
     }
 }
 
