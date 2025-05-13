@@ -51,21 +51,24 @@ $(document).on('click', '.addtocart', function(event) {
     event.preventDefault();
     let urlCart = $(this).data('url');
     
-    $.ajax({
-        type: 'POST',  // Đảm bảo sử dụng POST
-        url: urlCart,
-        dataType: 'json',
-        success: function(data) {
-            if (data.code === 200) {
-                alert('Sản phẩm đã được thêm vào giỏ hàng');
-            } else {
-                alert('Đã có lỗi xảy ra, vui lòng thử lại!');
-            }
-        },
-        error: function() {
-            alert('Lỗi kết nối, vui lòng thử lại sau!');
+   $.ajax({
+    type: 'POST',
+    url: urlCart,
+    dataType: 'json',
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    },
+    success: function(data) {
+        if (data.code === 200) {
+            alert('Sản phẩm đã được thêm vào giỏ hàng');
         }
-    });
+    },
+    error: function() {
+        alert('Đã có lỗi xảy ra, vui lòng thử lại!');
+    }
+});
+
+
 });
 
 

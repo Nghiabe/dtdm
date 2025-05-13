@@ -124,6 +124,7 @@ Route::get('/view{id}', [App\Http\Controllers\PageController::class, 'getchitiet
 Route::get('/{id}', [App\Http\Controllers\PageController::class, 'getsanpham'])->name('sanpham');
 
 // Route cho việc thêm sản phẩm vào giỏ hàng (addtocart)
+// Controller
 Route::post('/sanpham/addtocart/{id}', [App\Http\Controllers\PageController::class, 'getaddtocart'])->name('addtocart');
 
 // Route cho việc xóa sản phẩm khỏi giỏ hàng (delete-cart)
