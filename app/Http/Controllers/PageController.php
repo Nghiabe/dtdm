@@ -6,6 +6,7 @@ use App\Models\Product as ModelsProduct;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model\Product;
 use DB;
+use App\Models\Cart;
 use Illuminate\Support\Facades\Mail;
 use App\Models\City;
 use Illuminate\Support\Facades\Cookie;
@@ -194,25 +195,23 @@ class PageController extends Controller
         ], 404);
     }
 
-    // Lấy giỏ hàng từ cookie (nếu có)
-    $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
+    // Lấy giỏ hàng của người dùng đang đăng nhập
+    $user_id = auth()->id(); // Giả sử người dùng đã đăng nhập
+    $cart = Cart::where('user_id', $user_id)->where('product_id', $id)->first();
 
     // Kiểm tra nếu sản phẩm đã có trong giỏ hàng
-    if (isset($cart[$id])) {
+    if ($cart) {
         // Tăng số lượng sản phẩm trong giỏ hàng
-        $cart[$id]['quantity'] += 1;
+        $cart->quantity += 1;
+        $cart->save(); // Cập nhật giỏ hàng trong cơ sở dữ liệu
     } else {
         // Thêm sản phẩm mới vào giỏ hàng
-        $cart[$id] = [
-            'name' => $product->Title,
-            'price' => $product->Discount,
+        Cart::create([
+            'user_id' => $user_id,
+            'product_id' => $id,
             'quantity' => 1,
-            'image' => $product->Thumbnail
-        ];
+        ]);
     }
-
-    // Lưu giỏ hàng vào cookie (thời gian lưu cookie là 30 ngày)
-    Cookie::queue('cart', json_encode($cart), 60 * 24 * 30);
 
     return response()->json([
         'code' => 200,
@@ -222,10 +221,11 @@ class PageController extends Controller
 
 public function getgiohang()
 {
-     $category = DB::table('category')->get();
+    $category = DB::table('category')->get();
 
-    // Lấy giỏ hàng từ cookie (nếu có)
-    $carts = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
+    // Lấy giỏ hàng của người dùng từ cơ sở dữ liệu (dựa vào user_id)
+    $user_id = auth()->id();  // Giả sử người dùng đã đăng nhập
+    $carts = Cart::where('user_id', $user_id)->get();
 
     // Lấy thông tin các thành phố, tỉnh, và xã/phường từ các bảng tương ứng
     $city = City::orderby('matp', 'ASC')->get();
@@ -273,23 +273,33 @@ public function postgiohang(Request $Request)
         // Kết hợp địa chỉ thành một chuỗi
         $add = implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
 
-        // Lưu địa chỉ vào cookie
-        Cookie::queue('add', $add, 60 * 24 * 30);  // cookie sẽ tồn tại trong 30 ngày
+        // Lưu địa chỉ vào cơ sở dữ liệu
+        $address = new Address();  // Giả sử bạn đã tạo model Address
+        $address->user_id = auth()->id();  // Lưu ID người dùng
+        $address->address = $add;  // Lưu địa chỉ
+        $address->save();
 
-        // Xử lý phí vận chuyển và mã giảm giá
+        // Lưu phí vận chuyển và mã giảm giá vào cơ sở dữ liệu
         if ($matp) {
             // Lấy phí vận chuyển và mã giảm giá từ database
-            $feeship = Freeship::where('fee_matp', $matp)->where('fee_maqh', $maqh)->where('fee_xaid', $xaid)->get();
-            $couponData = Coupon::where('coupon_code', $coupon)->get();
+            $feeship = Freeship::where('fee_matp', $matp)->where('fee_maqh', $maqh)->where('fee_xaid', $xaid)->first();
+            $couponData = Coupon::where('coupon_code', $coupon)->first();
 
-            // Lưu phí vận chuyển vào cookie
-            foreach ($feeship as $fee) {
-                Cookie::queue('fee', $fee->fee_feeship, 60 * 24 * 30);  // Lưu cookie trong 30 ngày
+            // Lưu phí vận chuyển vào cơ sở dữ liệu
+            if ($feeship) {
+                $shipping = new Shipping();  // Giả sử bạn đã tạo model Shipping
+                $shipping->user_id = auth()->id();  // Lưu ID người dùng
+                $shipping->fee = $feeship->fee_feeship;
+                $shipping->save();
             }
 
-            // Lưu mã giảm giá vào cookie
-            foreach ($couponData as $cou) {
-                Cookie::queue('cou', $cou->coupon_number, 60 * 24 * 30);  // Lưu cookie trong 30 ngày
+            // Lưu mã giảm giá vào cơ sở dữ liệu
+            if ($couponData) {
+                $order = new Order();  // Giả sử bạn đã tạo model Order
+                $order->user_id = auth()->id();  // Lưu ID người dùng
+                $order->coupon_code = $couponData->coupon_code;
+                $order->discount = $couponData->coupon_number;
+                $order->save();
             }
 
             // Chuyển hướng tới trang thanh toán
@@ -307,21 +317,20 @@ public function getdeletecart( Request $request)
 {
     $id = $request->input('id');
 
-    // Lấy giỏ hàng từ cookie
-    $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
+    // Lấy giỏ hàng của người dùng từ cơ sở dữ liệu
+    $user_id = auth()->id();  // Giả sử người dùng đã đăng nhập
+    $cart = Cart::where('user_id', $user_id)->where('product_id', $id)->first();
 
     // Kiểm tra nếu sản phẩm có trong giỏ hàng
-    if (isset($cart[$id])) {
+    if ($cart) {
         // Xóa sản phẩm khỏi giỏ hàng
-        unset($cart[$id]);
-        // Cập nhật lại giỏ hàng trong cookie
-        Cookie::queue('cart', json_encode($cart), 60 * 24 * 30);
+        $cart->delete();
     }
 
     return response()->json([
         'code' => 200,
         'message' => 'Product removed from cart successfully',
-        'cart_component' => view('pages.Product.giohang', compact('cart'))->render()  // Render lại giỏ hàng
+        'cart_component' => view('pages.Product.giohang')->render()  // Render lại giỏ hàng
     ], 200);
     }
 }
