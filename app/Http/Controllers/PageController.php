@@ -160,123 +160,131 @@ class PageController extends Controller
         return view('pages.sanpham')->with('sanpham',$sanpham)->with('category',$category)->with('namecategory',$namecategory);
     }
     public function getaddtocart($id)
-{
-    // Lấy sản phẩm từ database
-    $product = DB::table('products')->where('product_id', $id)->first();
+    {
+        // Lấy sản phẩm từ database
+        $product = DB::table('products')->where('product_id', $id)->first();
 
-    // Kiểm tra nếu sản phẩm tồn tại
-    if (!$product) {
-        return response()->json([
-            'code' => 404,
-            'message' => 'Product not found'
-        ], 404);
-    }
-
-    // Lấy giỏ hàng từ cookie (nếu có)
-    $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
-
-    // Kiểm tra nếu sản phẩm đã có trong giỏ hàng
-    if (isset($cart[$id])) {
-        // Tăng số lượng sản phẩm trong giỏ hàng
-        $cart[$id]['quantity'] = $cart[$id]['quantity'] + 1;
-    } else {
-        // Thêm sản phẩm mới vào giỏ hàng
-        $cart[$id] = [
-            'name' => $product->Title,
-            'price' => $product->Discount,
-            'quantity' => 1,
-            'image' => $product->Thumbnail
-        ];
-    }
-
-    // Lưu giỏ hàng vào cookie (thời gian lưu cookie là 30 ngày)
-    Cookie::queue('cart', json_encode($cart), 60 * 24 * 30); // cookie sẽ tồn tại trong 30 ngày
-
-    return response()->json([
-        'code' => 200,
-        'message' => 'Product added to cart successfully'
-    ], 200);
-}
-public function getgiohang()
-{
-    $category = DB::table('category') ->get();
-    $carts = session()->get('cart');
-    $city = City::orderby('matp','ASC')->get();
-    $province = Province::orderby('maqh','ASC')->get();
-    $wards = Wards::orderby('xaid','ASC')->get();
-    return view('pages.Product.giohang', compact('category', 'carts', 'city', 'province','wards' ));
-}
-public function postgiohang(Request $Request)
-{
-    if ($Request->isMethod('post')){
-
-        $validator = Validator ::make($Request->all(),[
-            'wards'=>'required',
-                'province'=>'required',
-                'city'=>'required',
-        ], [
-            'province.required' => 'Trường này là trường bắt buộc',
-            'wards.required' => 'Trường này là trường bắt buộc',
-            'city.required' => 'Trường này là trường bắt buộc',
-        ]);
-
-        if($validator->fails()){
-            return redirect()->back()
-            ->withErrors($validator)
-            ->withInput();
-
+        // Kiểm tra nếu sản phẩm tồn tại
+        if (!$product) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Product not found'
+            ], 404);
         }
-        $allRequest  = $Request->all();
 
-                $coupon = $allRequest['coupon'];
-                $matp = $allRequest['city'];
-                $maqh = $allRequest['province'];
-                $xaid = $allRequest['wards'];
-                $wards = Wards::where('xaid',$allRequest['wards'])->first();
-                $province = Province::where('maqh',$allRequest['province'])->first();
-                $city = City::where('matp',$allRequest['city'])->first();
-                $add= implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
-                Session::put('add',$add);
-                Session::save();
-            if($matp){
-                $feeship = Freeship::where('fee_matp',$matp)->where('fee_maqh',$maqh)->where('fee_xaid',$xaid)->get();
-                $coupon = Coupon::where('coupon_code',$coupon)->get();
+        // Lấy giỏ hàng từ cookie (nếu có)
+        $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
 
-                foreach($feeship as $key=> $fee){
-                    Session::put('fee',$fee->fee_feeship);
+        // Kiểm tra nếu sản phẩm đã có trong giỏ hàng
+        if (isset($cart[$id])) {
+            // Tăng số lượng sản phẩm trong giỏ hàng
+            $cart[$id]['quantity'] = $cart[$id]['quantity'] + 1;
+        } else {
+            // Thêm sản phẩm mới vào giỏ hàng
+            $cart[$id] = [
+                'name' => $product->Title,
+                'price' => $product->Discount,
+                'quantity' => 1,
+                'image' => $product->Thumbnail
+            ];
+        }
+
+        // Lưu giỏ hàng vào cookie (thời gian lưu cookie là 30 ngày)
+        Cookie::queue('cart', json_encode($cart), 60 * 24 * 30); // cookie sẽ tồn tại trong 30 ngày
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'Product added to cart successfully'
+        ], 200);
+    }
+
+    public function getgiohang()
+    {
+        // Lấy giỏ hàng từ cookie
+        $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
+
+        // Lấy danh mục sản phẩm
+        $category = DB::table('category')->get();
+
+        // Trả về view giỏ hàng với dữ liệu giỏ hàng từ cookie
+        return view('pages.Product.giohang', compact('category', 'cart'));
+    }
+
+    public function getdeletecart(Request $request)
+    {
+        // Kiểm tra id sản phẩm cần xóa khỏi giỏ hàng
+        if ($request->id) {
+            $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
+
+            // Xóa sản phẩm khỏi giỏ hàng
+            unset($cart[$request->id]);
+
+            // Lưu lại giỏ hàng đã cập nhật vào cookie
+            Cookie::queue('cart', json_encode($cart), 60 * 24 * 30);
+
+            // Trả về giỏ hàng mới cập nhật
+            $category = DB::table('category')->get();
+            $dete = view('pages.Product.giohang', compact('cart', 'category'))->render();
+
+            return response()->json(['cart_component' => $dete, 'code' => 200], 200);
+        }
+
+        return response()->json(['code' => 404, 'message' => 'Product not found in cart'], 404);
+    }
+
+    public function postgiohang(Request $request)
+    {
+        if ($request->isMethod('post')) {
+            $validator = Validator::make($request->all(), [
+                'wards' => 'required',
+                'province' => 'required',
+                'city' => 'required',
+            ], [
+                'province.required' => 'Trường này là trường bắt buộc',
+                'wards.required' => 'Trường này là trường bắt buộc',
+                'city.required' => 'Trường này là trường bắt buộc',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+
+            // Lấy thông tin địa chỉ
+            $allRequest = $request->all();
+            $coupon = $allRequest['coupon'];
+            $matp = $allRequest['city'];
+            $maqh = $allRequest['province'];
+            $xaid = $allRequest['wards'];
+
+            // Xử lý thông tin địa chỉ và phí vận chuyển
+            $wards = Wards::where('xaid', $allRequest['wards'])->first();
+            $province = Province::where('maqh', $allRequest['province'])->first();
+            $city = City::where('matp', $allRequest['city'])->first();
+            $add = implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
+
+            // Lưu địa chỉ vào session
+            Session::put('add', $add);
+            Session::save();
+
+            // Lấy phí vận chuyển và coupon
+            if ($matp) {
+                $feeship = Freeship::where('fee_matp', $matp)->where('fee_maqh', $maqh)->where('fee_xaid', $xaid)->get();
+                $coupon = Coupon::where('coupon_code', $coupon)->get();
+
+                foreach ($feeship as $key => $fee) {
+                    Session::put('fee', $fee->fee_feeship);
                     Session::save();
                 }
-                foreach($coupon as $key=> $cou){
-                    Session::put('cou',$cou->coupon_number);
+
+                foreach ($coupon as $key => $cou) {
+                    Session::put('cou', $cou->coupon_number);
                     Session::save();
                 }
 
                 return Redirect::to('thanhtoan');
-
-
-}
-
-
-}
-
-}
-public function getdeletecart( Request $request)
-{
-    if($request->id){
-        $carts = session()->get('cart');
-        unset($carts[$request->id]);
-        session()->put('cart', $carts);
-        $carts = session()->get('cart');
-        $category = DB::table('category') ->get();
-        $dete = view('pages.Product.giohang', compact('carts','category'))->render();
-        return response()->json(['cart_component' =>$dete, 'code'=>200],200);
+            }
+        }
     }
 }
-
-}
-
-
-
-
-
-
