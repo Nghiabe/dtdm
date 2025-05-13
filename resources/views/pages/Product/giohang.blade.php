@@ -71,11 +71,12 @@
               <div class="form-group">
                   <label for="exampleInputPassword1">Chọn thành phố</label>
                   <select name="city" id="city" class="form-control input-sm m-bot15 choose add_delivery city">
-                        <option name="city" value="{{ old('city') }}">--Chọn tỉnh thành phố--</option>
-                    @foreach($city as $key => $ci)
-                        <option value="{{$ci->matp}}">{{$ci->name_city}}</option>
-                    @endforeach
-                </select>
+    <option name="city"  value="{{ old('city') }}">--Chọn tỉnh thành phố--</option>
+    @foreach($city as $key => $ci)
+        <option value="{{$ci->matp}}">{{$ci->name_city}}</option>
+    @endforeach
+</select>
+
                 @if ($errors->has('city'))
                     <span class="text-danger text-left">{{ $errors->first('city') }}</span>
                 @endif
