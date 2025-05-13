@@ -206,11 +206,11 @@ class PageController extends Controller
     // Lấy danh mục sản phẩm
     $category = DB::table('category')->get();
     
-    // Lấy các thành phố (city) từ cơ sở dữ liệu
-    $city = City::orderby('matp', 'ASC')->get();
+    // Lấy các tỉnh (province) từ cơ sở dữ liệu
+    $province = Province::orderby('maqh', 'ASC')->get();
 
-    // Trả về view giỏ hàng với dữ liệu giỏ hàng từ cookie và thành phố
-    return view('pages.Product.giohang', compact('category', 'cart', 'city'));
+    // Trả về view giỏ hàng với dữ liệu giỏ hàng từ cookie và các tỉnh
+    return view('pages.Product.giohang', compact('category', 'cart', 'province'));
     }
 
     public function getdeletecart(Request $request)
