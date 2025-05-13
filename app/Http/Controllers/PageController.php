@@ -21,6 +21,29 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Redirect;
 class PageController extends Controller
 {
+    public function getdupdatecart(Request $request)
+{
+    $id = $request->input('id');
+    $quantity = $request->input('quantity'); // Số lượng mới
+
+    // Lấy giỏ hàng từ cookie
+    $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
+
+    // Kiểm tra nếu sản phẩm có trong giỏ hàng
+    if (isset($cart[$id])) {
+        // Cập nhật số lượng sản phẩm
+        $cart[$id]['quantity'] = $quantity;
+        // Cập nhật lại giỏ hàng trong cookie
+        Cookie::queue('cart', json_encode($cart), 60 * 24 * 30);
+    }
+
+    return response()->json([
+        'code' => 200,
+        'message' => 'Cart updated successfully',
+        'cart_component' => view('pages.Product.giohang', compact('cart'))->render()  // Render lại giỏ hàng
+    ], 200);
+}
+
 	 public function getindex()
     {
         $blog = DB::table('blog')->orderby('id','desc')->get();
@@ -163,7 +186,15 @@ class PageController extends Controller
     public function getaddtocart($id)
 
     {
-       $product = DB::table('products')->where('product_id', $id)->first();
+       // Lấy sản phẩm từ database
+    $product = DB::table('products')->where('product_id', $id)->first();
+
+    if (!$product) {
+        return response()->json([
+            'code' => 404,
+            'message' => 'Product not found'
+        ], 404);
+    }
 
     // Lấy giỏ hàng từ cookie (nếu có)
     $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
@@ -171,7 +202,7 @@ class PageController extends Controller
     // Kiểm tra nếu sản phẩm đã có trong giỏ hàng
     if (isset($cart[$id])) {
         // Tăng số lượng sản phẩm trong giỏ hàng
-        $cart[$id]['quantity'] = $cart[$id]['quantity'] + 1;
+        $cart[$id]['quantity'] += 1;
     } else {
         // Thêm sản phẩm mới vào giỏ hàng
         $cart[$id] = [
@@ -183,7 +214,7 @@ class PageController extends Controller
     }
 
     // Lưu giỏ hàng vào cookie (thời gian lưu cookie là 30 ngày)
-    Cookie::queue('cart', json_encode($cart), 60 * 24 * 30); // cookie sẽ tồn tại trong 30 ngày
+    Cookie::queue('cart', json_encode($cart), 60 * 24 * 30);
 
     return response()->json([
         'code' => 200,
@@ -272,29 +303,27 @@ public function postgiohang(Request $Request)
 }
 
 }
+
 public function getdeletecart( Request $request)
 {
-    if($request->id){
-        // Lấy giỏ hàng từ cookie
-        $carts = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
+    $id = $request->input('id');
 
+    // Lấy giỏ hàng từ cookie
+    $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
+
+    // Kiểm tra nếu sản phẩm có trong giỏ hàng
+    if (isset($cart[$id])) {
         // Xóa sản phẩm khỏi giỏ hàng
-        unset($carts[$request->id]);
+        unset($cart[$id]);
+        // Cập nhật lại giỏ hàng trong cookie
+        Cookie::queue('cart', json_encode($cart), 60 * 24 * 30);
+    }
 
-        // Lưu lại giỏ hàng đã cập nhật vào cookie (thời gian lưu cookie là 30 ngày)
-        Cookie::queue('cart', json_encode($carts), 60 * 24 * 30);
-
-        // Lấy lại giỏ hàng sau khi đã xóa
-        $carts = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
-
-        // Lấy danh mục sản phẩm từ database
-        $category = DB::table('category')->get();
-
-        // Render lại giỏ hàng sau khi cập nhật
-        $dete = view('pages.Product.giohang', compact('carts', 'category'))->render();
-
-        // Trả về phản hồi JSON với giỏ hàng cập nhật
-        return response()->json(['cart_component' => $dete, 'code' => 200], 200);
+    return response()->json([
+        'code' => 200,
+        'message' => 'Product removed from cart successfully',
+        'cart_component' => view('pages.Product.giohang', compact('cart'))->render()  // Render lại giỏ hàng
+    ], 200);
     }
 }
 
