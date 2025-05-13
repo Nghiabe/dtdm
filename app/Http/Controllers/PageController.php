@@ -327,9 +327,6 @@ public function getdeletecart( Request $request)
     }
 }
 
-}
-
-
 
 
 
