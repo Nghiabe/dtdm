@@ -54,17 +54,22 @@ $(document).on('click', '.addtocart', function(event) {
    $.ajax({
     type: 'POST',
     url: urlCart,
-    dataType: 'json',
-    headers: {
-        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    data: {
+        _token: $('meta[name="csrf-token"]').attr('content')  // Gửi CSRF token trong data
     },
+    dataType: 'json',
     success: function(data) {
         if (data.code === 200) {
             alert('Sản phẩm đã được thêm vào giỏ hàng');
+        } else {
+            alert('Đã có lỗi xảy ra, vui lòng thử lại!');
         }
     },
-    error: function() {
-        alert('Đã có lỗi xảy ra, vui lòng thử lại!');
+    error: function(xhr, status, error) {
+        console.log('Error: ' + error);
+        console.log('Status: ' + status);
+        console.log('Response: ' + xhr.responseText); // This will show the complete response from the server
+        alert('Lỗi kết nối, vui lòng thử lại sau!');
     }
 });
 

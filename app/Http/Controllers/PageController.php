@@ -187,8 +187,9 @@ class PageController extends Controller
 
     {
        // Lấy sản phẩm từ database
-    $product = DB::table('products')->where('product_id', $id)->first();
+     $product = DB::table('products')->where('product_id', $id)->first();
 
+    // Kiểm tra xem sản phẩm có tồn tại không
     if (!$product) {
         return response()->json([
             'code' => 404,
@@ -214,11 +215,13 @@ class PageController extends Controller
     }
 
     // Lưu giỏ hàng vào cookie (thời gian lưu cookie là 30 ngày)
-    Cookie::queue('cart', json_encode($cart), 60 * 24 * 30);
+    Cookie::queue('cart', json_encode($cart), 60 * 24 * 30); // Lưu cookie trong 30 ngày
 
+    // Trả về phản hồi với thông báo thành công và giỏ hàng hiện tại
     return response()->json([
         'code' => 200,
-        'message' => 'Product added to cart successfully'
+        'message' => 'Product added to cart successfully',
+        'cart' => $cart // Trả lại giỏ hàng hiện tại trong phản hồi
     ], 200);
 }
 public function getgiohang()
