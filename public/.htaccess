@@ -5,6 +5,12 @@
 
     RewriteEngine On
 
+    # Allow POST requests to pass through
+    <Limit POST>
+        Order allow,deny
+        Allow from all
+    </Limit>
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -19,3 +25,15 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Ensure that POST methods are allowed for routes
+<Limit POST>
+    Order allow,deny
+    Allow from all
+</Limit>
+
+# Set Permissions for .htaccess to work
+<Directory /path/to/your/application>
+    AllowOverride All
+    Require all granted
+</Directory>
