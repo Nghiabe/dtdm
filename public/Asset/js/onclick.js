@@ -48,31 +48,30 @@ function add_wistlist(clicked_id){
 }
 
 $(document).on('click', '.addtocart', function(event) {
-    event.preventDefault();
+     event.preventDefault();
 
-    // Lấy URL từ data-url của phần tử
-    let urlCart = $(this).data('url');
+    let urlCart = $(this).data('url'); // Lấy URL từ data-url của phần tử
     
-    // Gửi yêu cầu AJAX đến URL
     $.ajax({
-    type: 'POST',  // Chắc chắn rằng bạn đang sử dụng POST cho yêu cầu thêm vào giỏ hàng
-    url: urlCart,
-    data: {
-        _token: $('meta[name="csrf-token"]').attr('content')  // Đảm bảo gửi CSRF token trong data
-    },
-    dataType: 'json',
-    success: function(data) {
-        if (data.code === 200) {
-            alert('Sản phẩm đã được thêm vào giỏ hàng');
-        } else {
-            alert('Đã có lỗi xảy ra, vui lòng thử lại!');
-        }
-    },
-    error: function(xhr, status, error) {
-        console.log('Error: ' + error);
-        console.log('Status: ' + status);
-        console.log('Response: ' + xhr.responseText); // Hiển thị phản hồi từ server
-        alert('Lỗi kết nối, vui lòng thử lại sau!');
+        type: 'POST', // Chắc chắn là POST
+        url: urlCart, 
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'), // CSRF token
+            id: $(this).data('id') // Lấy id từ data-id của phần tử (nếu cần)
+        },
+        dataType: 'json',
+        success: function(data) {
+            if (data.code === 200) {
+                alert('Sản phẩm đã được thêm vào giỏ hàng');
+            } else {
+                alert('Đã có lỗi xảy ra, vui lòng thử lại!');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.log('Error: ' + error);
+            console.log('Status: ' + status);
+            console.log('Response: ' + xhr.responseText); // Hiển thị phản hồi từ server
+            alert('Lỗi kết nối, vui lòng thử lại sau!');
     }
 });
 
