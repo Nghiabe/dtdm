@@ -55,10 +55,10 @@ $(document).on('click', '.addtocart', function(event) {
     
     // Gửi yêu cầu AJAX đến URL
     $.ajax({
-    type: 'POST',
+    type: 'POST',  // Chắc chắn rằng bạn đang sử dụng POST cho yêu cầu thêm vào giỏ hàng
     url: urlCart,
     data: {
-        _token: $('meta[name="csrf-token"]').attr('content') // CSRF token
+        _token: $('meta[name="csrf-token"]').attr('content')  // Đảm bảo gửi CSRF token trong data
     },
     dataType: 'json',
     success: function(data) {
@@ -71,7 +71,7 @@ $(document).on('click', '.addtocart', function(event) {
     error: function(xhr, status, error) {
         console.log('Error: ' + error);
         console.log('Status: ' + status);
-        console.log('Response: ' + xhr.responseText);
+        console.log('Response: ' + xhr.responseText); // Hiển thị phản hồi từ server
         alert('Lỗi kết nối, vui lòng thử lại sau!');
     }
 });
