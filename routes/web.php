@@ -123,13 +123,15 @@ Route::get('/view{id}', [App\Http\Controllers\PageController::class, 'getchitiet
 
 Route::get('/{id}', [App\Http\Controllers\PageController::class, 'getsanpham'])->name('sanpham');
 
+// Route cho việc thêm sản phẩm vào giỏ hàng (addtocart)
 Route::post('/sanpham/addtocart/{id}', [App\Http\Controllers\PageController::class, 'getaddtocart'])->name('addtocart');
 
-// Xóa sản phẩm khỏi giỏ hàng
+// Route cho việc xóa sản phẩm khỏi giỏ hàng (delete-cart)
 Route::post('/sanpham/delete-cart', [App\Http\Controllers\PageController::class, 'getdeletecart'])->name('deletecart');
 
-// Cập nhật giỏ hàng
+// Route cho việc cập nhật giỏ hàng (update-cart)
 Route::post('/sanpham/update-cart', [App\Http\Controllers\PageController::class, 'getdupdatecart'])->name('updatecart');
+
 
 Route::post('/tinhphi', [App\Http\Controllers\PageController::class, 'tinhphi'])->name('tinhphi');
 
