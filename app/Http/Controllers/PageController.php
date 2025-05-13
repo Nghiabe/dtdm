@@ -185,7 +185,7 @@ class PageController extends Controller
     }
     public function getaddtocart(Request $request, $id)
 {
-    $product = DB::table('products')->where('product_id', $id)->first();
+     $product = DB::table('products')->where('product_id', $id)->first();
 
     if (!$product) {
         return response()->json([
@@ -199,8 +199,10 @@ class PageController extends Controller
 
     // Kiểm tra nếu sản phẩm đã có trong giỏ hàng
     if (isset($cart[$id])) {
+        // Tăng số lượng sản phẩm trong giỏ hàng
         $cart[$id]['quantity'] += 1;
     } else {
+        // Thêm sản phẩm mới vào giỏ hàng
         $cart[$id] = [
             'name' => $product->Title,
             'price' => $product->Discount,
@@ -209,7 +211,7 @@ class PageController extends Controller
         ];
     }
 
-    // Lưu giỏ hàng vào cookie
+    // Lưu giỏ hàng vào cookie (thời gian lưu cookie là 30 ngày)
     Cookie::queue('cart', json_encode($cart), 60 * 24 * 30);
 
     return response()->json([
