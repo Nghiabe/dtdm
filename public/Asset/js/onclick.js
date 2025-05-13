@@ -55,29 +55,25 @@ $(document).on('click', '.addtocart', function(event) {
     
     // Gửi yêu cầu AJAX đến URL
     $.ajax({
-        type: 'POST',  // Sử dụng POST để gửi dữ liệu
-        url: urlCart,  // Địa chỉ API
-        data: {
-            _token: $('meta[name="csrf-token"]').attr('content')  // Gửi CSRF token trong data
-        },
-        dataType: 'json',  // Kiểu dữ liệu trả về là JSON
-        success: function(data) {
-            if (data.code === 200) {
-                // Hiển thị thông báo nếu sản phẩm được thêm vào giỏ hàng thành công
-                alert('Sản phẩm đã được thêm vào giỏ hàng');
-            } else {
-                // Nếu có lỗi từ server
-                alert('Đã có lỗi xảy ra, vui lòng thử lại!');
-            }
-        },
-        error: function(xhr, status, error) {
-            // Log thông tin lỗi vào console để kiểm tra
-            console.log('Error: ' + error);
-            console.log('Status: ' + status);
-            console.log('Response: ' + xhr.responseText);  // Hiển thị thông báo lỗi từ server
-            // Hiển thị thông báo lỗi kết nối
-            alert('Lỗi kết nối, vui lòng thử lại sau!');
+    type: 'POST',
+    url: urlCart,
+    data: {
+        _token: $('meta[name="csrf-token"]').attr('content') // CSRF token
+    },
+    dataType: 'json',
+    success: function(data) {
+        if (data.code === 200) {
+            alert('Sản phẩm đã được thêm vào giỏ hàng');
+        } else {
+            alert('Đã có lỗi xảy ra, vui lòng thử lại!');
         }
+    },
+    error: function(xhr, status, error) {
+        console.log('Error: ' + error);
+        console.log('Status: ' + status);
+        console.log('Response: ' + xhr.responseText);
+        alert('Lỗi kết nối, vui lòng thử lại sau!');
+    }
 });
 
 
