@@ -160,28 +160,42 @@ class PageController extends Controller
         return view('pages.sanpham')->with('sanpham',$sanpham)->with('category',$category)->with('namecategory',$namecategory);
     }
     public function getaddtocart($id)
+{
+    // Lấy sản phẩm từ database
+    $product = DB::table('products')->where('product_id', $id)->first();
 
-    {
-        $product =DB::table('products')->where('product_id',$id)->first();
-     $cart = session()-> get('cart');
-     if(isset($cart[$id])){
-        $cart[$id]['quantity'] = $cart[$id]['quantity']+1;
+    // Kiểm tra nếu sản phẩm tồn tại
+    if (!$product) {
+        return response()->json([
+            'code' => 404,
+            'message' => 'Product not found'
+        ], 404);
+    }
 
-     }else{
-        $cart[$id]=[
-            'name' =>$product->Title,
-            'price' =>$product->Discount,
-            'quantity'=>1,
-            'image'=>$product->Thumbnail
+    // Lấy giỏ hàng từ cookie (nếu có)
+    $cart = Cookie::get('cart') ? json_decode(Cookie::get('cart'), true) : [];
 
+    // Kiểm tra nếu sản phẩm đã có trong giỏ hàng
+    if (isset($cart[$id])) {
+        // Tăng số lượng sản phẩm trong giỏ hàng
+        $cart[$id]['quantity'] = $cart[$id]['quantity'] + 1;
+    } else {
+        // Thêm sản phẩm mới vào giỏ hàng
+        $cart[$id] = [
+            'name' => $product->Title,
+            'price' => $product->Discount,
+            'quantity' => 1,
+            'image' => $product->Thumbnail
         ];
     }
-        session()->put('cart',$cart);
-        return response()->json([
-                'code'=>200,
-                'massage'=>'success'
-            ], 200);
 
+    // Lưu giỏ hàng vào cookie (thời gian lưu cookie là 30 ngày)
+    Cookie::queue('cart', json_encode($cart), 60 * 24 * 30); // cookie sẽ tồn tại trong 30 ngày
+
+    return response()->json([
+        'code' => 200,
+        'message' => 'Product added to cart successfully'
+    ], 200);
 }
 public function getgiohang()
 {
