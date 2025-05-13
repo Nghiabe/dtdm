@@ -47,28 +47,26 @@ function add_wistlist(clicked_id){
 
 }
 
-function cartdelete(event) {
+$(document).on('click', '.addtocart', function(event) {
     event.preventDefault();
-    let urlDelete = $(this).data('url');
-    let id = $(this).data('id');
+    let urlCart = $(this).data('url');
     
     $.ajax({
-        type: 'POST',  // Đảm bảo sử dụng POST cho xóa sản phẩm
-        url: urlDelete,
-        data: {
-            _token: $('meta[name="csrf-token"]').attr('content'),  // CSRF token
-            id: id
-        },
-        success: function (data) {
+        type: 'POST',  // Đảm bảo sử dụng POST
+        url: urlCart,
+        dataType: 'json',
+        success: function(data) {
             if (data.code === 200) {
-                alert('Sản phẩm đã được xóa khỏi giỏ hàng');
+                alert('Sản phẩm đã được thêm vào giỏ hàng');
+            } else {
+                alert('Đã có lỗi xảy ra, vui lòng thử lại!');
             }
         },
-        error: function () {
-            alert('Có lỗi xảy ra khi xóa sản phẩm');
+        error: function() {
+            alert('Lỗi kết nối, vui lòng thử lại sau!');
         }
     });
-}
+});
 
 
 $(function()
