@@ -209,6 +209,7 @@ class PageController extends Controller
 
     // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
     $cart = Cart::where('user_id', $user_id)->where('product_id', $id)->first();
+Log::info('Product ID: ' . $product_id);  // In ra giá trị của product_id
 
     if ($cart) {
         // Tăng số lượng sản phẩm trong giỏ hàng
