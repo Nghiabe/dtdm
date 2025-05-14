@@ -235,20 +235,25 @@ class PageController extends Controller
 }
 public function getgiohang()
 {
-   // Lấy danh sách các danh mục từ cơ sở dữ liệu
-    $category = DB::table('category')->get();
+  $category = DB::table('category')->get();
 
     // Lấy giỏ hàng của người dùng từ cơ sở dữ liệu (dựa vào user_id)
-    $user_id = auth()->id();  // Giả sử người dùng đã đăng nhập
-    $carts = Cart::where('user_id', $user_id)->get();  // Lấy tất cả sản phẩm trong giỏ hàng của người dùng
+    $user_id = auth()->id();
+    $carts = Cart::where('user_id', $user_id)->get();
 
-    // Lấy thông tin các thành phố, tỉnh, và xã/phường từ các bảng tương ứng
+    // Tính tổng tiền của giỏ hàng
+    $total = 0;
+    foreach ($carts as $cart) {
+        $total += $cart->product->Price * $cart->quantity;
+    }
+
+    // Lấy thông tin các thành phố, tỉnh, và xã/phường
     $city = City::orderby('matp', 'ASC')->get();
     $province = Province::orderby('maqh', 'ASC')->get();
     $wards = Wards::orderby('xaid', 'ASC')->get();
 
-    // Trả về view giỏ hàng với tất cả dữ liệu đã lấy
-    return view('pages.Product.giohang', compact('category', 'carts', 'city', 'province', 'wards'));
+    // Trả về view giỏ hàng với các biến
+    return view('pages.Product.giohang', compact('category', 'carts', 'city', 'province', 'wards', 'total'));
 }
 
     public function postgiohang(Request $Request)
