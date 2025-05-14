@@ -53,7 +53,12 @@
                                         </td>
                                         <td class="total">{{ number_format($cart->product->Price * $cart->quantity, 0, ',', '.') }} đ</td>
                                         <td class="product-remove"><a href="#" id="cartupdate" data-id="{{ $cart->id }}"><i class="fa-solid fa-floppy-disk"></i></a></td>
-                                        <td class="product-remove"><a href="#" id="cartdelete" data-id="{{ $cart->id }}"><span class="ion-ios-close"></span></a></td>
+                                        <td class="product-remove">
+    <a href="#" id="cartdelete" data-id="{{ $cart->id }}">
+        <span class="ion-ios-close"></span>
+    </a>
+</td>
+
                                     </tr>
                                 @endforeach
                             @endif
