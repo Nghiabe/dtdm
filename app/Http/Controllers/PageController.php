@@ -236,19 +236,16 @@ class PageController extends Controller
 }
 public function getgiohang()
 {
-    $category = DB::table('category')->get();
+  $category = DB::table('category')->get();
 
     // Lấy giỏ hàng của người dùng từ cơ sở dữ liệu (dựa vào user_id)
     $user_id = auth()->id();
-    $carts = Cart::where('user_id', $user_id)->with('product')->get();  // Eager load the 'product' relationship
+    $carts = Cart::where('user_id', $user_id)->get();
 
     // Tính tổng tiền của giỏ hàng
     $total = 0;
     foreach ($carts as $cart) {
-        // Kiểm tra nếu sản phẩm tồn tại trước khi tính tổng tiền
-        if ($cart->product) {
-            $total += $cart->product->Price * $cart->quantity;
-        }
+        $total += $cart->product->Price * $cart->quantity;
     }
 
     // Lấy thông tin các thành phố, tỉnh, và xã/phường
@@ -264,7 +261,7 @@ public function getgiohang()
 
     public function postgiohang(Request $Request)
 {
-  if ($Request->isMethod('post')){
+   if ($Request->isMethod('post')){
 
         $validator = Validator ::make($Request->all(),[
             'wards'=>'required',
@@ -315,7 +312,7 @@ public function getgiohang()
 
 }
 
-
+}
     public function getdeletecart(Request $request)
 {
     $id = $request->input('id');  // Lấy ID của sản phẩm muốn xóa
