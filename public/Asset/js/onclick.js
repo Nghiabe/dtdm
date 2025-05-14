@@ -46,20 +46,30 @@ function add_wistlist(clicked_id){
     localStorage.setItem('data', JSON.stringify(old_data));
 
 }
-$(document).on('click', '.addtocart', function(event) {
-    event.preventDefault();
+$(document).on('click', '.addtocart', function(e) {
+    e.preventDefault();
 
-    let urlCart = $(this).data('url');
-    let productId = $(this).data('id');
+    const productId = $(this).data('id');
+    const url = $(this).data('url');
 
-    if (!productId) {
-        alert('ID sản phẩm không hợp lệ!');
-        return;
-    }
-
-    // Gọi hàm đúng cách với 2 tham số
-    addtocart(productId, urlCart);
+    $.ajax({
+        url: url,
+        type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            quantity: 1 // hoặc lấy từ input khác nếu có
+        },
+        success: function(res) {
+            alert(res.message);
+        },
+        error: function(xhr) {
+            alert('Lỗi: ' + xhr.responseText);
+        }
+    });
 });
+
 
 // (document).on('click', '.addtocart', function(event) {
 //     event.preventDefault();  // Ngừng hành động mặc định của nút click
