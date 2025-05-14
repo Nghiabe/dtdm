@@ -116,7 +116,7 @@ class ProductsController extends Controller
             }
 
             // Sau khi lưu đơn hàng, chuyển đến trang thành công
-            return Redirect::to('thanhcong')->with('id', $order_id);
+            return Redirect::to('thanhcong')->with('id',  $order_id);
         }
     } else {
         // Xử lý phương thức thanh toán không phải trực tiếp (ATM hoặc các phương thức khác)

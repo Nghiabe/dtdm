@@ -237,29 +237,31 @@ class PageController extends Controller
 public function getgiohang()
 {
    $category = DB::table('category')->get();
-    $user_id = auth()->id();
-    $carts = Cart::where('user_id', $user_id)->with('product')->get(); // Eager load the 'product' relationship
+$user_id = auth()->id();
 
-    // Kiểm tra nếu giỏ hàng trống, trả về một mảng rỗng nếu không có giỏ hàng
-    if ($carts->isEmpty()) {
-        $carts = collect(); // Tạo một collection rỗng nếu giỏ hàng trống
+// Lấy giỏ hàng của người dùng với eager load mối quan hệ 'product'
+$carts = Cart::where('user_id', $user_id)->with('product')->get();
+
+// Kiểm tra nếu giỏ hàng trống
+if ($carts->isEmpty()) {
+    $carts = collect(); // Tạo một collection rỗng nếu giỏ hàng trống
+}
+
+// Tính tổng tiền của giỏ hàng
+$total = 0;
+foreach ($carts as $cart) {
+    if ($cart->product) {
+        $total += $cart->product->Price * $cart->quantity;
     }
+}
 
-    // Tính tổng tiền của giỏ hàng
-    $total = 0;
-    foreach ($carts as $cart) {
-        if ($cart->product) {
-            $total += $cart->product->Price * $cart->quantity;
-        }
-    }
+// Lấy thông tin các thành phố, tỉnh, và xã/phường
+$city = City::orderby('matp', 'ASC')->get();
+$province = Province::orderby('maqh', 'ASC')->get();
+$wards = Wards::orderby('xaid', 'ASC')->get();
 
-    // Lấy thông tin các thành phố, tỉnh, và xã/phường
-    $city = City::orderby('matp', 'ASC')->get();
-    $province = Province::orderby('maqh', 'ASC')->get();
-    $wards = Wards::orderby('xaid', 'ASC')->get();
-
-    // Trả về view giỏ hàng với các biến
-    return view('pages.Product.giohang', compact('category', 'carts', 'city', 'province', 'wards', 'total'));
+// Trả về view giỏ hàng với các biến
+return view('pages.Product.giohang', compact('category', 'carts', 'city', 'province', 'wards', 'total'));
 }
 
  
