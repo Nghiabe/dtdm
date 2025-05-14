@@ -42,223 +42,180 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 <script src="{{ secure_asset('backend/js/morris.js') }}"></script>
 <script src="{{ secure_asset('Asset/js/onclick.js') }}"></script>
 
-<style>
-        /* Cơ bản cho trang */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
 
-        .container {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Phần đầu trang */
-        .hero-wrap {
-            background-image: url('Asset/images/bg_1.jpg');
-            background-size: cover;
-            background-position: center;
-            padding: 50px 0;
-        }
-
-        .hero-wrap .breadcrumbs {
-            color: white;
-            font-size: 18px;
-        }
-
-        .hero-wrap .bread {
-            color: white;
-            font-size: 36px;
-        }
-
-        /* Giỏ hàng */
-        .cart-list {
-            margin-top: 30px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        .cart-list table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .cart-list th, .cart-list td {
-            padding: 15px;
-            text-align: center;
-        }
-
-        .cart-list th {
-            background-color: #f2f2f2;
-        }
-
-        .cart-list td {
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .product-name h3 {
-            font-size: 18px;
-            margin: 0;
-        }
-
-        .product-remove a {
-            color: red;
-            font-size: 20px;
-        }
-
-        .product-remove a:hover {
-            color: darkred;
-        }
-
-        /* Thanh toán */
-        .cart-total {
-            background-color: #fff;
-            padding: 20px;
-            margin-top: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        .cart-total p {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .cart-total .total-price {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .btn-primary {
-            background-color: #0062cc;
-            border: none;
-            padding: 10px 20px;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .btn-primary:hover {
-            background-color: #004bb5;
-        }
-
-        /* Dropdown select box */
-        select {
-            padding: 8px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        /* Footer */
-        .footer {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 10px 0;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-
-        .footer a {
-            color: #fff;
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
 
 </head>
 <body>
 <section id="container">
-    <!--header start-->
-    <header class="header fixed-top clearfix">
-        <div class="brand">
-            <a href="index.html" class="logo">Admin</a>
-            <div class="sidebar-toggle-box">
-                <div class="fa fa-bars"></div>
-            </div>
-        </div>
-        <div class="top-nav clearfix">
-            <ul class="nav pull-right top-menu">
-                <!-- Search bar -->
+<!--header start-->
+<header class="header fixed-top clearfix">
+<!--logo start-->
+<div class="brand">
+    <a href="index.html" class="logo">
+        Admin
+    </a>
+    <div class="sidebar-toggle-box">
+        <div class="fa fa-bars"></div>
+    </div>
+</div>
+<!--logo end-->
+
+<div class="top-nav clearfix">
+    <!--search & user info start-->
+    <ul class="nav pull-right top-menu">
+        <li>
+            <input type="text" class="form-control search" placeholder=" Search">
+        </li>
+
+        @if (Auth::check())
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-circle-user"></i> {{Auth::user()->Name}} </a>
+          <div class="dropdown-menu" aria-labelledby="dropdown04">
+              <a class="dropdown-item" href="">Đơn mua</a>
+              <a class="dropdown-item" href="{{ route('logout') }}">Đăng xuất</a>
+
+
+
+          </div>
+        </li>
+          @else
+          <li class="nav-item cta cta-colored"><a href="{{ route('showsignin') }}" class="nav-link"><i class="fa-solid fa-user"></i> Đăng nhập/Đăng kí</a></li>
+
+
+          @endif
+
+
+
+        <!-- user login dropdown end -->
+
+    </ul>
+    <!--search & user info end-->
+</div>
+</header>
+<!--header end-->
+<!--sidebar start-->
+<aside>
+    <div id="sidebar" class="nav-collapse">
+        <!-- sidebar menu start-->
+        <div class="leftside-navigation">
+            <ul class="sidebar-menu" id="nav-accordion">
                 <li>
-                    <input type="text" class="form-control search" placeholder="Search">
+                    <a class="active" href="{{URL::to('/dashboard')}}">
+                        <i class="fa fa-dashboard"></i>
+                        <span>Tổng quan</span>
+                    </a>
                 </li>
 
-                @if (Auth::check())
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-circle-user"></i> {{Auth::user()->Name}} </a>
-                    <div class="dropdown-menu" aria-labelledby="dropdown04">
-                        <a class="dropdown-item" href="">Đơn mua</a>
-                        <a class="dropdown-item" href="{{ route('logout') }}">Đăng xuất</a>
-                    </div>
+                <li class="sub-menu">
+                    <a href="javascript:;">
+                        <i class="fa fa-book"></i>
+                        <span>Danh mục sản phẩm</span>
+                    </a>
+                    <ul class="sub">
+						<li><a href="{{URL::to('/add-category-product')}}">Thêm danh mục sản phẩm</a></li>
+						<li><a href="{{URL::to('/all-category-product')}}">Liệt kê danh mục sản phẩm</a></li>
+                    </ul>
                 </li>
-                @else
-                <li class="nav-item cta cta-colored"><a href="{{ route('showsignin') }}" class="nav-link"><i class="fa-solid fa-user"></i> Đăng nhập/Đăng kí</a></li>
+                <li class="sub-menu">
+                    <a href="javascript:;">
+                        <i class="fa fa-book"></i>
+                        <span>Sản phẩm</span>
+                    </a>
+                    <ul class="sub">
+						<li><a href="{{URL::to('/add-product')}}">Thêm sản phẩm</a></li>
+						<li><a href="{{URL::to('/all-product')}}">Liệt kê sản phẩm</a></li>
+                    </ul>
+                </li>
+                <li class="sub-menu">
+                    <a href="javascript:;">
+                        <i class="fa fa-shopping-cart"></i>
+                        <span>Đơn hàng</span>
+                    </a>
+                    <ul class="sub">
+                        <li><a href="{{URL::to('/manage-order')}}">Quản lý đơn hàng</a></li>
+                    </ul>
+                </li>
+                 <li class="sub-menu">
+                    <a href="javascript:;">
+                        <i class="fa fa-book"></i>
+                        <span>Mã giảm giá</span>
+                    </a>
+                    <ul class="sub">
+                        <li><a href="{{URL::to('/insert-coupon')}}">Quản lý mã giảm giá</a></li>
+                        <li><a href="{{URL::to('/list-coupon')}}">Liệt kê mã giảm giá</a></li>
+                    </ul>
+                </li>
+                <li class="sub-menu">
+                    <a href="javascript:;">
+                        <i class="fa fa-book"></i>
+                        <span>Vận chuyển</span>
+                    </a>
+                    <ul class="sub">
+                        <li><a href="{{URL::to('/delivery')}}">Quản lý vận chuyển</a></li>
+                        <li><a href="{{URL::to('/list-delivery')}}">Liệt kê phí vận chuyển</a></li>
+                    </ul>
+                </li>
+                <li class="sub-menu">
+                    <a href="javascript:;">
+                        <i class="fa fa-book"></i>
+                        <span>Quản lý khách hàng<nav></nav></span>
+                    </a>
+                    <ul class="sub">
+                        <li><a href="{{URL::to('/all-custommer')}}">Danh sách khách hàng</a></li>
+                    </ul>
+                </li>
+                <li class="sub-menu">
+                    <a href="javascript:;">
+                        <i class="fa fa-book"></i>
+                        <span>Quản lý liên hệ<nav></nav></span>
+                    </a>
+                    <ul class="sub">
+                        <li><a href="{{URL::to('/all-contact')}}">Thông tin liên hê</a></li>
+                    </ul>
+                    <ul class="sub">
+                        <li><a href="{{URL::to('/contact-feedback')}}">Phản hồi liên hệ</a></li>
+                    </ul>
+                </li>
+                @if (Auth::guard('auth')->user()->level==1)
+                <li class="sub-menu">
+                    <a href="javascript:;">
+                        <i class="fa fa-book"></i>
+                        <span>Quản lý nhân viên<nav></nav></span>
+                    </a>
+                    <ul class="sub">
+                        <li><a href="{{URL::to('/add-staff')}}">Thêm nhân viên</a></li>
+                        <li><a href="{{URL::to('/all_staff')}}">Danh sách nhân viên</a></li>
+                    </ul>
+                </li>
+
+                <li class="sub-menu">
+                    <a href="javascript:;">
+                        <i class="fa fa-bar-chart-o"></i>
+                        <span>Thống kê</span>
+                    </a>
+                </li>
                 @endif
+
+
             </ul>
         </div>
-    </header>
-    <!--header end-->
-
-    <!-- sidebar start -->
-    <aside>
-        <div id="sidebar" class="nav-collapse">
-            <div class="leftside-navigation">
-                <ul class="sidebar-menu" id="nav-accordion">
-                    <li><a class="active" href="{{URL::to('/dashboard')}}"><i class="fa fa-dashboard"></i><span>Tổng quan</span></a></li>
-                    <li class="sub-menu">
-                        <a href="javascript:;"><i class="fa fa-book"></i><span>Danh mục sản phẩm</span></a>
-                        <ul class="sub">
-                            <li><a href="{{URL::to('/add-category-product')}}">Thêm danh mục sản phẩm</a></li>
-                            <li><a href="{{URL::to('/all-category-product')}}">Liệt kê danh mục sản phẩm</a></li>
-                        </ul>
-                    </li>
-                    <li class="sub-menu">
-                        <a href="javascript:;"><i class="fa fa-shopping-cart"></i><span>Đơn hàng</span></a>
-                        <ul class="sub">
-                            <li><a href="{{URL::to('/manage-order')}}">Quản lý đơn hàng</a></li>
-                        </ul>
-                    </li>
-                    <!-- Add other menu items here -->
-                </ul>
-            </div>
-        </div>
-    </aside>
-    <!--sidebar end-->
-
-    <!--main content start-->
-    <section id="main-content">
-        <section class="wrapper">
-            @yield('Admin_Content') <!-- Chỗ này sẽ chèn nội dung trang của bạn -->
-        </section>
-
-        <!-- footer -->
-        <div class="footer">
-            <div class="wthree-copyright">
-                <p>© 2022 Visitors. All rights reserved | Design by <a href="http://w3layouts.com">D&N Shop</a></p>
-            </div>
-        </div>
-        <!-- / footer -->
+        <!-- sidebar menu end-->
+    </div>
+</aside>
+<!--sidebar end-->
+<!--main content start-->
+<section id="main-content">
+	<section class="wrapper">
+    @yield('Admin_Content')
     </section>
-    <!--main content end-->
+ <!-- footer -->
+		  <div class="footer">
+			<div class="wthree-copyright">
+			  <p>© 2022 Visitors. All rights reserved | Design by <a href="http://w3layouts.com">D&N Shop</a></p>
+			</div>
+		  </div>
+  <!-- / footer -->
 </section>
-
 <!--main content end-->
 </section>
 <script src="{{asset('backend/js/bootstrap.js')}}"></script>

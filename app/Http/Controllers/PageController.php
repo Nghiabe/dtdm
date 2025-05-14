@@ -264,67 +264,50 @@ public function getgiohang()
 
     public function postgiohang(Request $Request)
 {
-   if ($Request->isMethod('post')){
+  if ($Request->isMethod('post')){
 
-        // Validate các trường nhập liệu
-        $validator = Validator::make($Request->all(), [
-            'wards' => 'required',
-            'province' => 'required',
-            'city' => 'required',
+        $validator = Validator ::make($Request->all(),[
+            'wards'=>'required',
+                'province'=>'required',
+                'city'=>'required',
         ], [
             'province.required' => 'Trường này là trường bắt buộc',
             'wards.required' => 'Trường này là trường bắt buộc',
             'city.required' => 'Trường này là trường bắt buộc',
         ]);
 
-        if ($validator->fails()) {
+        if($validator->fails()){
             return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+            ->withErrors($validator)
+            ->withInput();
 
-        // Lấy tất cả dữ liệu từ form
+        }
         $allRequest  = $Request->all();
 
-        // Lấy các giá trị từ request
-        $coupon = $allRequest['coupon'];
-        $matp = $allRequest['city'];
-        $maqh = $allRequest['province'];
-        $xaid = $allRequest['wards'];
-        $wards = Wards::where('xaid', $xaid)->first();
-        $province = Province::where('maqh', $maqh)->first();
-        $city = City::where('matp', $matp)->first();
+                $coupon = $allRequest['coupon'];
+                $matp = $allRequest['city'];
+                $maqh = $allRequest['province'];
+                $xaid = $allRequest['wards'];
+                $wards = Wards::where('xaid',$allRequest['wards'])->first();
+                $province = Province::where('maqh',$allRequest['province'])->first();
+                $city = City::where('matp',$allRequest['city'])->first();
+                $add= implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
+                Session::put('add',$add);
+                Session::save();
+            if($matp){
+                $feeship = Freeship::where('fee_matp',$matp)->where('fee_maqh',$maqh)->where('fee_xaid',$xaid)->get();
+                $coupon = Coupon::where('coupon_code',$coupon)->get();
 
-        // Kết hợp địa chỉ thành một chuỗi
-        $add = implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
-        
-        // Lưu địa chỉ vào session
-        Session::put('add', $add);
-        Session::save();
+                foreach($feeship as $key=> $fee){
+                    Session::put('fee',$fee->fee_feeship);
+                    Session::save();
+                }
+                foreach($coupon as $key=> $cou){
+                    Session::put('cou',$cou->coupon_number);
+                    Session::save();
+                }
 
-        // Lưu giỏ hàng vào CSDL
-        $user_id = auth()->id();  // Lấy ID người dùng
-
-        // Lấy tất cả sản phẩm trong giỏ hàng
-        $cartItems = Cart::where('user_id', $user_id)->get();
-        
-        foreach ($cartItems as $cartItem) {
-            // Kiểm tra và lưu sản phẩm vào bảng Order hoặc bảng liên quan (tuỳ vào yêu cầu)
-            // Giả sử bạn có bảng 'orders' để lưu thông tin giỏ hàng
-            $order = new Order();  // Giả sử bạn đã tạo model Order
-            $order->user_id = $user_id;
-            $order->product_id = $cartItem->product_id;
-            $order->quantity = $cartItem->quantity;
-            $order->total_price = $cartItem->product->Price * $cartItem->quantity;
-            $order->address = $add;  // Lưu địa chỉ vào bảng đơn hàng
-            $order->coupon_code = $coupon;
-            $order->save();
-        }
-
-        // Sau khi lưu giỏ hàng vào CSDL, bạn có thể thực hiện việc xóa giỏ hàng khỏi bảng Cart nếu cần
-        Cart::where('user_id', $user_id)->delete();  // Xóa giỏ hàng đã lưu
-
-        return redirect()->route('thanhtoan');
+                return Redirect::to('thanhtoan');
 
 
 }
