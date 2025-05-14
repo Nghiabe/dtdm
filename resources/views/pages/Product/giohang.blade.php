@@ -1,7 +1,9 @@
 @extends('index')
 
 @section('content')
-<div class="hero-wrap hero-bread " style="background-image: url('Asset/images/bg_1.jpg');">
+
+<!-- Hero Section -->
+<div class="hero-wrap hero-bread" style="background-image: url('Asset/images/bg_1.jpg');">
     <div class="container">
         <div class="row no-gutters slider-text align-items-center justify-content-center">
             <div class="col-md-9 ftco-animate text-center">
@@ -12,6 +14,7 @@
     </div>
 </div>
 
+<!-- Cart Section -->
 <section class="ftco-section ftco-cart">
     <div class="container">
         <div class="row">
@@ -54,11 +57,10 @@
                                         <td class="total">{{ number_format($cart->product->Price * $cart->quantity, 0, ',', '.') }} đ</td>
                                         <td class="product-remove"><a href="#" id="cartupdate" data-id="{{ $cart->id }}"><i class="fa-solid fa-floppy-disk"></i></a></td>
                                         <td class="product-remove">
-    <a href="#" id="cartdelete" data-id="{{ $cart->id }}">
-        <span class="ion-ios-close"></span>
-    </a>
-</td>
-
+                                            <a href="#" id="cartdelete" data-id="{{ $cart->id }}">
+                                                <span class="ion-ios-close"></span>
+                                            </a>
+                                        </td>
                                     </tr>
                                 @endforeach
                             @endif
@@ -68,10 +70,11 @@
             </div>
         </div>
 
-        <!-- Form Thanh Toán -->
+        <!-- Checkout Form -->
         <div class="row align-items-end" style="margin-left:450px;">
             <form action="{{ route('giohang') }}" method="post" style="width: 700px;">
                 @csrf
+                <!-- Thành phố -->
                 <div class="col-md-10">
                     <div class="form-group">
                         <label for="city">Chọn thành phố</label>
@@ -87,6 +90,7 @@
                     </div>
                 </div>
 
+                <!-- Quận huyện -->
                 <div class="col-md-10">
                     <div class="form-group">
                         <label for="province">Chọn quận huyện</label>
@@ -102,6 +106,7 @@
                     </div>
                 </div>
 
+                <!-- Xã phường -->
                 <div class="col-md-10" style="border-bottom: 2px solid #e1e1e1">
                     <div class="form-group">
                         <label for="wards">Chọn xã phường</label>
@@ -117,6 +122,7 @@
                     </div>
                 </div>
 
+                <!-- Mã giảm giá -->
                 <div class="col-md-10" style="border-bottom: 2px solid #e1e1e1">
                     <div class="form-group">
                         <label for="coupon">Nhập mã giảm giá</label>
@@ -124,6 +130,7 @@
                     </div>
                 </div>
 
+                <!-- Tổng tiền -->
                 <div class="col-lg-10 mt-5 cart-wrap ftco-animate">
                     <div class="cart-total mb-3">
                         <p class="d-flex total-price">
@@ -134,12 +141,14 @@
                     </div>
                 </div>
 
+                <!-- Thanh toán -->
                 <button class="btn btn-primary py-3 px-4" style="margin-left:240px;" type="submit">Thanh toán</button>
             </form>
         </div>
     </div>
 </section>
 
+<!-- Footer Subscribe Section -->
 <section class="ftco-section ftco-no-pt ftco-no-pb py-5 bg-light">
     <div class="container py-4">
         <div class="row d-flex justify-content-center py-5">
@@ -150,4 +159,13 @@
             <div class="col-md-6 d-flex align-items-center">
                 <form action="#" class="subscribe-form">
                     <div class="form-group d-flex">
-                        <input type="text" class="form-control" placeholder="Nhập địa
+                        <input type="text" class="form-control" placeholder="Nhập địa chỉ email của bạn">
+                        <input type="submit" value="Đăng ký" class="submit px-3">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@endsection
