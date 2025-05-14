@@ -193,6 +193,7 @@ class PageController extends Controller
             'message' => 'User not authenticated'
         ], 401);
     }
+    $product_id = $id;
 
     // Kiểm tra xem sản phẩm có tồn tại trong cơ sở dữ liệu không
     $product = DB::table('products')->where('product_id', $id)->first();
