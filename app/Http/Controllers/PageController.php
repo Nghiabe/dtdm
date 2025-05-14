@@ -280,50 +280,70 @@ public function getgiohang()
 
     public function postgiohang(Request $Request)
 {
-   if ($Request->isMethod('post')){
+   if ($Request->isMethod('post')) {
 
-        $validator = Validator ::make($Request->all(),[
-            'wards'=>'required',
-                'province'=>'required',
-                'city'=>'required',
+        // Validate các trường nhập liệu
+        $validator = Validator::make($Request->all(), [
+            'wards' => 'required',
+            'province' => 'required',
+            'city' => 'required',
         ], [
             'province.required' => 'Trường này là trường bắt buộc',
             'wards.required' => 'Trường này là trường bắt buộc',
             'city.required' => 'Trường này là trường bắt buộc',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return redirect()->back()
-            ->withErrors($validator)
-            ->withInput();
-
+                ->withErrors($validator)
+                ->withInput();
         }
-        $allRequest  = $Request->all();
 
-                $coupon = $allRequest['coupon'];
-                $matp = $allRequest['city'];
-                $maqh = $allRequest['province'];
-                $xaid = $allRequest['wards'];
-                $wards = Wards::where('xaid',$allRequest['wards'])->first();
-                $province = Province::where('maqh',$allRequest['province'])->first();
-                $city = City::where('matp',$allRequest['city'])->first();
-                $add= implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
-                Session::put('add',$add);
+        // Lấy dữ liệu từ request
+        $allRequest = $Request->all();
+        $coupon = $allRequest['coupon'];
+        $matp = $allRequest['city'];
+        $maqh = $allRequest['province'];
+        $xaid = $allRequest['wards'];
+
+        // Kiểm tra dữ liệu tồn tại
+        $wards = Wards::where('xaid', $xaid)->first();
+        $province = Province::where('maqh', $maqh)->first();
+        $city = City::where('matp', $matp)->first();
+
+        // Nếu dữ liệu không hợp lệ, trả về lỗi
+        if (!$wards || !$province || !$city) {
+            return redirect()->back()->with('error', 'Thông tin không hợp lệ. Vui lòng kiểm tra lại.');
+        }
+
+        // Kết hợp địa chỉ và lưu vào session
+        $add = implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
+        Session::put('add', $add);
+        Session::save();
+
+        // Lấy phí vận chuyển và mã giảm giá
+        if ($matp) {
+            $feeship = Freeship::where('fee_matp', $matp)
+                ->where('fee_maqh', $maqh)
+                ->where('fee_xaid', $xaid)
+                ->get();
+
+            $coupon = Coupon::where('coupon_code', $coupon)->get();
+
+            // Lưu phí vận chuyển vào session
+            foreach ($feeship as $fee) {
+                Session::put('fee', $fee->fee_feeship);
                 Session::save();
-            if($matp){
-                $feeship = Freeship::where('fee_matp',$matp)->where('fee_maqh',$maqh)->where('fee_xaid',$xaid)->get();
-                $coupon = Coupon::where('coupon_code',$coupon)->get();
+            }
 
-                foreach($feeship as $key=> $fee){
-                    Session::put('fee',$fee->fee_feeship);
-                    Session::save();
-                }
-                foreach($coupon as $key=> $cou){
-                    Session::put('cou',$cou->coupon_number);
-                    Session::save();
-                }
+            // Lưu mã giảm giá vào session
+            foreach ($coupon as $cou) {
+                Session::put('cou', $cou->coupon_number);
+                Session::save();
+            }
 
-                return Redirect::to('thanhtoan');
+            // Chuyển sang trang thanh toán
+            return Redirect::to('thanhtoan');
 
 
 }
