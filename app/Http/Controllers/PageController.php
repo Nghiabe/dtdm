@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Log;
+use App\Models\Address; 
 use App\Models\Product as ModelsProduct;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model\Product;
