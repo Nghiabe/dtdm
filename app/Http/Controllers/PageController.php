@@ -193,37 +193,39 @@ class PageController extends Controller
             'message' => 'User not authenticated'
         ], 401);
     }
-    
 
     // Kiểm tra xem sản phẩm có tồn tại trong cơ sở dữ liệu không
     $product = DB::table('products')->where('product_id', $id)->first();
-
+    
     if (!$product) {
         return response()->json([
             'code' => 404,
             'message' => 'Product not found'
         ], 404);
     }
-Log::info('This is a log message');
+
+    // In ra log để kiểm tra
+    Log::info('Product ID: ' . $product->product_id);
+    
     // Lấy ID của người dùng đã đăng nhập
     $user_id = auth()->id();
 
     // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-    $cart = Cart::where('user_id', $user_id)->where('product_id', $id)->first();
-    $product_id = $id;
-Log::info('Product ID: ' . $product_id);  // In ra giá trị của product_id
+    $cart = Cart::where('user_id', $user_id)->where('product_id', $product->product_id)->first();
 
     if ($cart) {
         // Tăng số lượng sản phẩm trong giỏ hàng
         $cart->quantity += 1;
         $cart->save(); // Cập nhật giỏ hàng trong cơ sở dữ liệu
+        Log::info('Updated cart for product: ' . $product->product_id . ' with quantity: ' . $cart->quantity);
     } else {
         // Thêm sản phẩm mới vào giỏ hàng
         Cart::create([
             'user_id' => $user_id,
-            'product_id' => $id,
+            'product_id' => $product->product_id,
             'quantity' => 1,
         ]);
+        Log::info('Added new product to cart: ' . $product->product_id);
     }
 
     return response()->json([
