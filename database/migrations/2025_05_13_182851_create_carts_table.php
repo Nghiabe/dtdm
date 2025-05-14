@@ -12,23 +12,31 @@ return new class extends Migration
      * @return void
      */
     public function up()
-    {
-        Schema::create('carts', function (Blueprint $table) {
-            $table->id(); // Tạo cột id tự tăng
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Khóa ngoại với bảng users
-            $table->foreignId('product_id')->constrained()->onDelete('cascade'); // Khóa ngoại với bảng products
-            $table->integer('quantity')->default(1); // Số lượng sản phẩm
-            $table->timestamps(); // Tạo cột created_at và updated_at
-        });
-    }
+{
+    Schema::table('carts', function (Blueprint $table) {
+        // Xóa khóa ngoại trước khi thay đổi kiểu dữ liệu
+        $table->dropForeign(['product_id']);
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::dropIfExists('carts');
-    }
+        // Thay đổi kiểu dữ liệu của cột product_id
+        $table->unsignedBigInteger('product_id')->change();
+
+        // Thêm lại khóa ngoại sau khi thay đổi kiểu dữ liệu
+        $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+    });
+}
+
+public function down()
+{
+    Schema::table('carts', function (Blueprint $table) {
+        // Xóa khóa ngoại trước khi thay đổi kiểu dữ liệu
+        $table->dropForeign(['product_id']);
+
+        // Thay đổi lại kiểu dữ liệu của product_id
+        $table->integer('product_id')->change();
+
+        // Thêm lại khóa ngoại sau khi thay đổi kiểu dữ liệu
+        $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+    });
+}
+
 };
