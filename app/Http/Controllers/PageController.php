@@ -362,22 +362,40 @@ public function getgiohang()
 
 public function getdeletecart( Request $request)
 {
-    $id = $request->input('id');
+    $id = $request->input('id');  // Lấy ID của sản phẩm muốn xóa
 
     // Lấy giỏ hàng của người dùng từ cơ sở dữ liệu
-    $user_id = auth()->id();  // Giả sử người dùng đã đăng nhập
+    $user_id = auth()->id();  // Lấy ID người dùng đã đăng nhập
+
+    // Tìm sản phẩm trong giỏ hàng của người dùng
     $cart = Cart::where('user_id', $user_id)->where('product_id', $id)->first();
 
-    // Kiểm tra nếu sản phẩm có trong giỏ hàng
+    // Kiểm tra xem sản phẩm có tồn tại trong giỏ hàng
     if ($cart) {
         // Xóa sản phẩm khỏi giỏ hàng
         $cart->delete();
+    } else {
+        // Nếu không tìm thấy sản phẩm, trả về thông báo lỗi
+        return response()->json([
+            'code' => 404,
+            'message' => 'Product not found in cart'
+        ], 404);
     }
 
+    // Lấy giỏ hàng mới sau khi đã xóa sản phẩm
+    $carts = Cart::where('user_id', $user_id)->get();
+
+    // Tính tổng tiền giỏ hàng mới
+    $total = 0;
+    foreach ($carts as $cart) {
+        $total += $cart->product->Price * $cart->quantity;
+    }
+
+    // Trả về dữ liệu giỏ hàng cập nhật và tổng tiền
     return response()->json([
         'code' => 200,
         'message' => 'Product removed from cart successfully',
-        'cart_component' => view('pages.Product.giohang')->render()  // Render lại giỏ hàng
+        'cart_component' => view('pages.Product.giohang', compact('carts', 'total'))->render()
     ], 200);
     }
 }
