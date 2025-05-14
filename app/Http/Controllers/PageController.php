@@ -237,31 +237,43 @@ class PageController extends Controller
 public function getgiohang()
 {
    $category = DB::table('category')->get();
-$user_id = auth()->id();
 
-// Lấy giỏ hàng của người dùng với eager load mối quan hệ 'product'
-$carts = Cart::where('user_id', $user_id)->with('product')->get();
+    // Lấy giỏ hàng của người dùng từ cơ sở dữ liệu (dựa vào user_id)
+    $user_id = auth()->id();
+    $carts = Cart::where('user_id', $user_id)->get();
 
-// Kiểm tra nếu giỏ hàng trống
-if ($carts->isEmpty()) {
-    $carts = collect(); // Tạo một collection rỗng nếu giỏ hàng trống
-}
-
-// Tính tổng tiền của giỏ hàng
-$total = 0;
-foreach ($carts as $cart) {
-    if ($cart->product) {
+    // Tính tổng tiền của giỏ hàng
+    $total = 0;
+    foreach ($carts as $cart) {
         $total += $cart->product->Price * $cart->quantity;
     }
-}
 
-// Lấy thông tin các thành phố, tỉnh, và xã/phường
-$city = City::orderby('matp', 'ASC')->get();
-$province = Province::orderby('maqh', 'ASC')->get();
-$wards = Wards::orderby('xaid', 'ASC')->get();
+    // Lấy thông tin các thành phố, tỉnh, và xã/phường
+    $city = City::orderby('matp', 'ASC')->get();
+    $province = Province::orderby('maqh', 'ASC')->get();
+    $wards = Wards::orderby('xaid', 'ASC')->get();
 
-// Trả về view giỏ hàng với các biến
-return view('pages.Product.giohang', compact('category', 'carts', 'city', 'province', 'wards', 'total'));
+    // Lấy phí vận chuyển (Giả sử bạn đã có bảng Freeship hoặc một bảng chứa thông tin phí vận chuyển)
+    $shippingFee = 0; // Mặc định không có phí vận chuyển
+    $userProvince = $request->province; // Lấy province từ request
+    $userCity = $request->city; // Lấy city từ request
+
+    if ($userCity && $userProvince) {
+        // Kiểm tra phí vận chuyển theo thành phố và tỉnh
+        $feeship = Freeship::where('fee_matp', $userCity)
+                           ->where('fee_maqh', $userProvince)
+                           ->first();
+
+        if ($feeship) {
+            $shippingFee = $feeship->fee_feeship;  // Lấy phí vận chuyển
+        }
+    }
+
+    // Tổng cộng bao gồm phí vận chuyển
+    $total += $shippingFee;
+
+    // Trả về view giỏ hàng với các biến
+    return view('pages.Product.giohang', compact('category', 'carts', 'city', 'province', 'wards', 'total', 'shippingFee'));
 }
 
  
