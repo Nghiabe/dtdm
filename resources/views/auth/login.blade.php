@@ -188,7 +188,7 @@
                             <div class="d-flex justify-content-center">
                                 <a href="{{url('/login_facebook/facebook')}}">Forgot your password?</a>
                             </div>
-                             <button class="btnRegister" type="submit"">ĐĂNG NHẬP</button>
+                             <button class="btnRegister" type="submit">ĐĂNG NHẬP</button>
                              <br><br> <br>
                              <b style="margin-left:400px">Hoặc:</b>
                              <br><br>
