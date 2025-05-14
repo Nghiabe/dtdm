@@ -263,7 +263,6 @@ public function getgiohang()
 {
    if ($Request->isMethod('post')){
 
-        // Validate các trường nhập liệu
         $validator = Validator::make($Request->all(), [
             'wards' => 'required',
             'province' => 'required',
@@ -280,28 +279,26 @@ public function getgiohang()
                 ->withInput();
         }
 
-        // Lấy tất cả dữ liệu từ form
-        $allRequest = $Request->all();
+        $allRequest  = $Request->all();
 
-        // Lấy các giá trị từ request
         $coupon = $allRequest['coupon'];
         $matp = $allRequest['city'];
         $maqh = $allRequest['province'];
         $xaid = $allRequest['wards'];
-
+        
         // Lấy thông tin địa chỉ từ các bảng
-        $wards = Wards::where('xaid', $xaid)->first();
-        $province = Province::where('maqh', $maqh)->first();
-        $city = City::where('matp', $matp)->first();
-
+        $wards = Wards::where('xaid', $allRequest['wards'])->first();
+        $province = Province::where('maqh', $allRequest['province'])->first();
+        $city = City::where('matp', $allRequest['city'])->first();
+        
         // Kết hợp địa chỉ thành một chuỗi
-        $address = implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
+        $add = implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
 
-        // Lưu địa chỉ vào cơ sở dữ liệu
-        $addressRecord = new Address();  // Giả sử bạn đã tạo model Address
-        $addressRecord->user_id = auth()->id();  // Lưu ID người dùng
-        $addressRecord->address = $address;  // Lưu địa chỉ
-        $addressRecord->save();
+        // Lưu địa chỉ vào cơ sở dữ liệu (bảng Address)
+        $address = new Address();
+        $address->user_id = auth()->id(); // Lưu ID người dùng
+        $address->address = $add; // Lưu địa chỉ
+        $address->save();
 
         // Lưu phí vận chuyển và mã giảm giá vào cơ sở dữ liệu
         $shippingFee = 0;  // Mặc định không có phí vận chuyển
@@ -326,30 +323,39 @@ public function getgiohang()
             if ($couponData) {
                 $discount = $couponData->coupon_number;
             }
-
-            // Tính tổng tiền giỏ hàng
-            $totalAmount = 0;
-            $user_id = auth()->id();
-            $carts = Cart::where('user_id', $user_id)->get();
-
-            foreach ($carts as $cart) {
-                $totalAmount += $cart->product->Price * $cart->quantity;
-            }
-
-            // Cộng phí vận chuyển vào tổng
-            $totalAmount += $shippingFee;
-
-            // Lưu thông tin đơn hàng vào cơ sở dữ liệu
-            $order = new Order();  // Giả sử bạn đã tạo model Order
-            $order->user_id = auth()->id();  // Lưu ID người dùng
-            $order->coupon_code = $coupon;
-            $order->discount = $discount;
-            $order->total_amount = $totalAmount;  // Lưu tổng tiền bao gồm phí vận chuyển và giảm giá
-            $order->address_id = $addressRecord->id;  // Liên kết với địa chỉ
-            $order->save();
         }
 
-        // Chuyển hướng tới trang thanh toán hoặc đơn hàng
+        // Lưu thông tin giỏ hàng vào cơ sở dữ liệu
+        $user_id = auth()->id();
+        $carts = Cart::where('user_id', $user_id)->get();
+
+        foreach ($carts as $cart) {
+            // Lưu giỏ hàng vào cơ sở dữ liệu
+            $cartRecord = new Cart();
+            $cartRecord->user_id = $user_id;
+            $cartRecord->product_id = $cart->product_id;
+            $cartRecord->quantity = $cart->quantity;
+            $cartRecord->save();
+        }
+
+        // Tính tổng tiền giỏ hàng (bao gồm phí vận chuyển và giảm giá)
+        $totalAmount = 0;
+        foreach ($carts as $cart) {
+            $totalAmount += $cart->product->Price * $cart->quantity;
+        }
+
+        $totalAmount += $shippingFee;
+
+        // Lưu thông tin đơn hàng vào cơ sở dữ liệu
+        $order = new Order();
+        $order->user_id = auth()->id();
+        $order->coupon_code = $coupon;
+        $order->discount = $discount;
+        $order->total_amount = $totalAmount; // Lưu tổng tiền bao gồm phí vận chuyển và giảm giá
+        $order->address_id = $address->id; // Liên kết với địa chỉ
+        $order->save();
+
+        // Chuyển hướng đến trang thanh toán hoặc đơn hàng
         return redirect()->route('thanhtoan');
 
 
