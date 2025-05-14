@@ -235,11 +235,12 @@ class PageController extends Controller
 }
 public function getgiohang()
 {
+   // Lấy danh sách các danh mục từ cơ sở dữ liệu
     $category = DB::table('category')->get();
 
     // Lấy giỏ hàng của người dùng từ cơ sở dữ liệu (dựa vào user_id)
     $user_id = auth()->id();  // Giả sử người dùng đã đăng nhập
-    $carts = Cart::where('user_id', $user_id)->get();
+    $carts = Cart::where('user_id', $user_id)->get();  // Lấy tất cả sản phẩm trong giỏ hàng của người dùng
 
     // Lấy thông tin các thành phố, tỉnh, và xã/phường từ các bảng tương ứng
     $city = City::orderby('matp', 'ASC')->get();
