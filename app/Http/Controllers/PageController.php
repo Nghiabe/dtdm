@@ -203,7 +203,7 @@ class PageController extends Controller
             'message' => 'Product not found'
         ], 404);
     }
-
+Log::info('This is a log message');
     // Lấy ID của người dùng đã đăng nhập
     $user_id = auth()->id();
 
