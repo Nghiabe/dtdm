@@ -126,7 +126,8 @@ Route::get('/{id}', [App\Http\Controllers\PageController::class, 'getsanpham'])-
 // Route cho việc thêm sản phẩm vào giỏ hàng (addtocart)
 // Controller
 Route::post('/addtocart/{id}', [App\Http\Controllers\PageController::class, 'getaddtocart']);
-Route::post('/sanpham/addtocart/{id}', [PageController::class, 'getaddtocart'])->name('addtocart');
+Route::post('/addtocart/{id}', [App\Http\Controllers\PageController::class, 'getaddtocart']);
+Route::get('/sanpham/addtocart/{id}', [PageController::class, 'getaddtocart'])->name('addtocart');
 Route::get('/sanpham/addtocart/{id}', [App\Http\Controllers\PageController::class, 'getaddtocart'])->name('addtocart');
 // Route cho việc xóa sản phẩm khỏi giỏ hàng (delete-cart)
 Route::post('/sanpham/delete-cart', [App\Http\Controllers\PageController::class, 'getdeletecart'])->name('deletecart');
