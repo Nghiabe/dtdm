@@ -23,7 +23,7 @@ class ProductsController extends Controller
     public function __construct() {
 	$this->middleware('auth');
 }
-    public function getcheckout()
+    public function getcheckout(Request $request)
 
     {
 
