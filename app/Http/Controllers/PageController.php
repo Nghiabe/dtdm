@@ -236,16 +236,21 @@ class PageController extends Controller
 }
 public function getgiohang()
 {
-  $category = DB::table('category')->get();
-
-    // Lấy giỏ hàng của người dùng từ cơ sở dữ liệu (dựa vào user_id)
+   $category = DB::table('category')->get();
     $user_id = auth()->id();
-    $carts = Cart::where('user_id', $user_id)->get();
+    $carts = Cart::where('user_id', $user_id)->with('product')->get(); // Eager load the 'product' relationship
+
+    // Kiểm tra nếu giỏ hàng trống, trả về một mảng rỗng nếu không có giỏ hàng
+    if ($carts->isEmpty()) {
+        $carts = collect(); // Tạo một collection rỗng nếu giỏ hàng trống
+    }
 
     // Tính tổng tiền của giỏ hàng
     $total = 0;
     foreach ($carts as $cart) {
-        $total += $cart->product->Price * $cart->quantity;
+        if ($cart->product) {
+            $total += $cart->product->Price * $cart->quantity;
+        }
     }
 
     // Lấy thông tin các thành phố, tỉnh, và xã/phường
