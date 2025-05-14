@@ -84,45 +84,55 @@ public function signup(Request $Request)
 public function signin(Request $Request)
 {
 
-    $validator = Validator ::make($Request->all(),[
-        'email'=>'required|email',
-        'password'=>'required',
-    ],[
+   // Log khi bắt đầu xử lý đăng nhập
+    Log::info('Attempting to login with email: ' . $Request->email);
+
+    $validator = Validator::make($Request->all(), [
+        'email' => 'required|email',
+        'password' => 'required',
+    ], [
         'email.required' => 'Email là trường bắt buộc',
         'email.email' => 'Email không đúng định dạng',
         'password.required' => 'Mật khẩu là trường bắt buộc',
     ]);
 
-    if($validator->fails()){
-        return redirect()->back()
-        ->withErrors($validator)
-        ->withInput();
-
+    if ($validator->fails()) {
+        Log::warning('Validation failed for email: ' . $Request->email);  // Log khi validation thất bại
+        return redirect()->back()->withErrors($validator)->withInput();
     }
-    $remember = $Request-> remember;
 
+    $remember = $Request->has('remember');  // Kiểm tra "remember me"
 
-    $arr=[
-            'Email' => $Request->email,
-             'password' =>  $Request->password
-        ];
-        if (Auth::attempt($arr, $remember)) {
-            if(Auth::user()->level==1||Auth::user()->level==2){
-                return redirect()->route('admin')->with('message', 'taif khoarn ddax bij khoaa');
-               }
-           if(Auth::user()->level!=3){
-            return redirect()->route('signin')->with('message', 'taif khoarn ddax bij khoaa');
-           }
+    // Mảng thông tin đăng nhập
+    $arr = [
+        'email' => $Request->email, // Chắc chắn rằng 'email' nhỏ
+        'password' => $Request->password
+    ];
 
+    // Kiểm tra đăng nhập
+    if (Auth::attempt($arr, $remember)) {
+        // Đăng nhập thành công
+        Log::info('User logged in successfully: ' . $Request->email);  // Log khi đăng nhập thành công
 
+        // Kiểm tra phân quyền
+        if (Auth::user()->level == 1 || Auth::user()->level == 2) {
+            Log::warning('User with email ' . $Request->email . ' has restricted access.');  // Log khi người dùng bị cấm
+            return redirect()->route('admin')->with('message', 'Tài khoản đã bị khóa');
+        }
+        if (Auth::user()->level != 3) {
+            Log::warning('User with email ' . $Request->email . ' has insufficient access level.');  // Log khi người dùng có level không hợp lệ
+            return redirect()->route('signin')->with('message', 'Tài khoản không có quyền truy cập');
+        }
 
+        // Lưu thông tin người dùng vào session
         Session::flash('account_user', 'Xin chào ');
-        return redirect()->route('index');
 
-        }else{
-			// Kiểm tra không đúng sẽ hiển thị thông báo lỗi
-			Session::flash('error', 'Email hoặc mật khẩu không đúng!');
-			return redirect('dangnhap');
+        return redirect()->route('index');
+    } else {
+        // Nếu đăng nhập thất bại
+        Log::warning('Login failed for email: ' . $Request->email);  // Log khi đăng nhập thất bại
+        Session::flash('error', 'Email hoặc mật khẩu không đúng!');
+        return redirect('dangnhap');
 		}
 
 }

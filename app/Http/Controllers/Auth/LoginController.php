@@ -42,7 +42,7 @@ class LoginController extends Controller
     /**
      * Override the login function to add logging.
      */
-    public function login(Request $request)
+    public function signin(Request $request)
     {
         Log::info('Attempting to login with email: ' . $request->email); // Log email khi đăng nhập
 
