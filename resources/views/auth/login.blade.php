@@ -17,8 +17,7 @@
         <div class="col-md-3 register-left">
             <h3>Chào mừng bạn đến với D&N!</h3>
             <p>Để giữ kết nối với chúng tôi, vui lòng đăng nhập bằng thông tin cá nhân của bạn.</p>
-            <!-- Chuyển href sang đăng ký đúng -->
-            <a href="{{ route('showsignup') }}" class="btnbtn">ĐĂNG KÍ</a>
+            <a href="{{ route('showsignup') }}" class="btn btn-default">ĐĂNG KÍ</a>
         </div>
         <div class="col-md-9 register-right">
             <div class="tab-content" id="myTabContent">
@@ -31,14 +30,14 @@
                                 <div class="form-group">
                                     <input type="text" class="form-control" placeholder="Email *" value="" name="email" required/>
                                     @if ($errors->has('email'))
-                                    <span class="text-danger text-left">{{ $errors->first('email') }}</span>
+                                        <span class="text-danger text-left">{{ $errors->first('email') }}</span>
                                     @endif
                                 </div>
 
                                 <div class="form-group">
                                     <input type="password" class="form-control" placeholder="Mật khẩu *" value="" name="password" required/>
                                     @if ($errors->has('password'))
-                                    <span class="text-danger text-left">{{ $errors->first('password') }}</span>
+                                        <span class="text-danger text-left">{{ $errors->first('password') }}</span>
                                     @endif
                                 </div>
 
@@ -50,7 +49,7 @@
                                     <a href="{{url('/login_facebook/facebook')}}">Quên mật khẩu?</a>
                                 </div>
 
-                                <button class="btnRegister" type="submit">ĐĂNG NHẬP</button>
+                                <button class="btn btn-primary btnRegister" type="submit">ĐĂNG NHẬP</button>
                             </div>
                         </div>
 
