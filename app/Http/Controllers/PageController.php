@@ -186,6 +186,15 @@ class PageController extends Controller
     }
     public function getaddtocart(Request $request, $id)
 {
+    // Kiểm tra xem người dùng đã đăng nhập hay chưa
+    if (!auth()->check()) {
+        return response()->json([
+            'code' => 401,
+            'message' => 'User not authenticated'
+        ], 401);
+    }
+
+    // Kiểm tra xem sản phẩm có tồn tại trong cơ sở dữ liệu không
     $product = DB::table('products')->where('product_id', $id)->first();
 
     if (!$product) {
@@ -195,15 +204,10 @@ class PageController extends Controller
         ], 404);
     }
 
-    $user_id = auth()->id(); // Giả sử người dùng đã đăng nhập
-    if (!$user_id) {
-        return response()->json([
-            'code' => 401,
-            'message' => 'User not authenticated'
-        ], 401);
-    }
+    // Lấy ID của người dùng đã đăng nhập
+    $user_id = auth()->id();
 
-    // Kiểm tra giỏ hàng của người dùng
+    // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
     $cart = Cart::where('user_id', $user_id)->where('product_id', $id)->first();
 
     if ($cart) {
