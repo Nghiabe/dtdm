@@ -186,7 +186,7 @@ class PageController extends Controller
     }
     public function getaddtocart(Request $request, $id)
 {
-      $product = DB::table('products')->where('product_id', $id)->first();
+    $product = DB::table('products')->where('product_id', $id)->first();
 
     if (!$product) {
         return response()->json([
@@ -195,11 +195,17 @@ class PageController extends Controller
         ], 404);
     }
 
-    // Lấy giỏ hàng của người dùng đang đăng nhập
     $user_id = auth()->id(); // Giả sử người dùng đã đăng nhập
+    if (!$user_id) {
+        return response()->json([
+            'code' => 401,
+            'message' => 'User not authenticated'
+        ], 401);
+    }
+
+    // Kiểm tra giỏ hàng của người dùng
     $cart = Cart::where('user_id', $user_id)->where('product_id', $id)->first();
 
-    // Kiểm tra nếu sản phẩm đã có trong giỏ hàng
     if ($cart) {
         // Tăng số lượng sản phẩm trong giỏ hàng
         $cart->quantity += 1;
@@ -218,7 +224,6 @@ class PageController extends Controller
         'message' => 'Product added to cart successfully'
     ], 200);
 }
-
 public function getgiohang()
 {
     $category = DB::table('category')->get();
@@ -235,9 +240,10 @@ public function getgiohang()
     // Trả về view giỏ hàng với tất cả dữ liệu đã lấy
     return view('pages.Product.giohang', compact('category', 'carts', 'city', 'province', 'wards'));
 }
-public function postgiohang(Request $Request)
+
+    public function postgiohang(Request $Request)
 {
-   if ($Request->isMethod('post')){
+    if ($Request->isMethod('post')){
 
         // Validate các trường nhập liệu
         $validator = Validator::make($Request->all(), [
@@ -256,62 +262,88 @@ public function postgiohang(Request $Request)
                 ->withInput();
         }
 
-        // Lấy tất cả dữ liệu từ form
-        $allRequest = $Request->all();
+        // Xử lý logic lưu giỏ hàng và địa chỉ tại đây
 
-        // Lấy các giá trị từ request
-        $coupon = $allRequest['coupon'];
-        $matp = $allRequest['city'];
-        $maqh = $allRequest['province'];
-        $xaid = $allRequest['wards'];
-
-        // Lấy thông tin địa chỉ từ các bảng
-        $wards = Wards::where('xaid', $allRequest['wards'])->first();
-        $province = Province::where('maqh', $allRequest['province'])->first();
-        $city = City::where('matp', $allRequest['city'])->first();
-
-        // Kết hợp địa chỉ thành một chuỗi
-        $add = implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
-
-        // Lưu địa chỉ vào cơ sở dữ liệu
-        $address = new Address();  // Giả sử bạn đã tạo model Address
-        $address->user_id = auth()->id();  // Lưu ID người dùng
-        $address->address = $add;  // Lưu địa chỉ
-        $address->save();
-
-        // Lưu phí vận chuyển và mã giảm giá vào cơ sở dữ liệu
-        if ($matp) {
-            // Lấy phí vận chuyển và mã giảm giá từ database
-            $feeship = Freeship::where('fee_matp', $matp)->where('fee_maqh', $maqh)->where('fee_xaid', $xaid)->first();
-            $couponData = Coupon::where('coupon_code', $coupon)->first();
-
-            // Lưu phí vận chuyển vào cơ sở dữ liệu
-            if ($feeship) {
-                $shipping = new Shipping();  // Giả sử bạn đã tạo model Shipping
-                $shipping->user_id = auth()->id();  // Lưu ID người dùng
-                $shipping->fee = $feeship->fee_feeship;
-                $shipping->save();
-            }
-
-            // Lưu mã giảm giá vào cơ sở dữ liệu
-            if ($couponData) {
-                $order = new Order();  // Giả sử bạn đã tạo model Order
-                $order->user_id = auth()->id();  // Lưu ID người dùng
-                $order->coupon_code = $couponData->coupon_code;
-                $order->discount = $couponData->coupon_number;
-                $order->save();
-            }
-
-            // Chuyển hướng tới trang thanh toán
-            return Redirect::to('thanhtoan');
-
-
+    }
 }
 
+// public function postgiohang(Request $Request)
+// {
+//    if ($Request->isMethod('post')){
 
-}
+//         // Validate các trường nhập liệu
+//         $validator = Validator::make($Request->all(), [
+//             'wards' => 'required',
+//             'province' => 'required',
+//             'city' => 'required',
+//         ], [
+//             'province.required' => 'Trường này là trường bắt buộc',
+//             'wards.required' => 'Trường này là trường bắt buộc',
+//             'city.required' => 'Trường này là trường bắt buộc',
+//         ]);
 
-}
+//         if ($validator->fails()) {
+//             return redirect()->back()
+//                 ->withErrors($validator)
+//                 ->withInput();
+//         }
+
+//         // Lấy tất cả dữ liệu từ form
+//         $allRequest = $Request->all();
+
+//         // Lấy các giá trị từ request
+//         $coupon = $allRequest['coupon'];
+//         $matp = $allRequest['city'];
+//         $maqh = $allRequest['province'];
+//         $xaid = $allRequest['wards'];
+
+//         // Lấy thông tin địa chỉ từ các bảng
+//         $wards = Wards::where('xaid', $allRequest['wards'])->first();
+//         $province = Province::where('maqh', $allRequest['province'])->first();
+//         $city = City::where('matp', $allRequest['city'])->first();
+
+//         // Kết hợp địa chỉ thành một chuỗi
+//         $add = implode(' ,', array($wards->name_xaphuong, $province->name_quanhuyen, $city->name_city));
+
+//         // Lưu địa chỉ vào cơ sở dữ liệu
+//         $address = new Address();  // Giả sử bạn đã tạo model Address
+//         $address->user_id = auth()->id();  // Lưu ID người dùng
+//         $address->address = $add;  // Lưu địa chỉ
+//         $address->save();
+
+//         // Lưu phí vận chuyển và mã giảm giá vào cơ sở dữ liệu
+//         if ($matp) {
+//             // Lấy phí vận chuyển và mã giảm giá từ database
+//             $feeship = Freeship::where('fee_matp', $matp)->where('fee_maqh', $maqh)->where('fee_xaid', $xaid)->first();
+//             $couponData = Coupon::where('coupon_code', $coupon)->first();
+
+//             // Lưu phí vận chuyển vào cơ sở dữ liệu
+//             if ($feeship) {
+//                 $shipping = new Shipping();  // Giả sử bạn đã tạo model Shipping
+//                 $shipping->user_id = auth()->id();  // Lưu ID người dùng
+//                 $shipping->fee = $feeship->fee_feeship;
+//                 $shipping->save();
+//             }
+
+//             // Lưu mã giảm giá vào cơ sở dữ liệu
+//             if ($couponData) {
+//                 $order = new Order();  // Giả sử bạn đã tạo model Order
+//                 $order->user_id = auth()->id();  // Lưu ID người dùng
+//                 $order->coupon_code = $couponData->coupon_code;
+//                 $order->discount = $couponData->coupon_number;
+//                 $order->save();
+//             }
+
+//             // Chuyển hướng tới trang thanh toán
+//             return Redirect::to('thanhtoan');
+
+
+// }
+
+
+// }
+
+// }
 
 public function getdeletecart( Request $request)
 {
