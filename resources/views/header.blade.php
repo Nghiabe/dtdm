@@ -45,26 +45,24 @@
       <li class="nav-item cta cta-colored"><a href="{{ route('giohang') }}" class="nav-link"><span class="icon-shopping_cart"></span></a></li>
 
 
-      @auth
-        <!-- Khi đã đăng nhập -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="dropdownUser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="fa-solid fa-circle-user"></i> {{ auth()->user()->name }}
-          </a>
-          <div class="dropdown-menu" aria-labelledby="dropdownUser">
+      @if (Auth::check())
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-circle-user"></i> {{Auth::user()->Name}} </a>
+        <div class="dropdown-menu" aria-labelledby="dropdown04">
             <a class="dropdown-item" href="{{ route('donmua') }}">Đơn mua</a>
             <a class="dropdown-item" href="{{ route('logout') }}">Đăng xuất</a>
-          </div>
-        </li>
+
+
+
+        </div>
+      </li>
+
+
         @else
-        <!-- Khi chưa đăng nhập -->
-        <li class="nav-item cta cta-colored">
-          <a href="{{ route('showsignin') }}" class="nav-link">
-            <i class="fa-solid fa-user"></i> Đăng nhập/Đăng kí
-          </a>
-        </li>
-        @endauth
-        
+        <li class="nav-item cta cta-colored"><a href="{{ route('showsignin') }}" class="nav-link"><i class="fa-solid fa-user"></i> Đăng nhập/Đăng kí</a></li>
+
+
+        @endif
         <li class="nav-item"> <div class="nav-search nav-link">
             <form method="POST" action="{{URL::to('/timkiem')}}">
                 @csrf
