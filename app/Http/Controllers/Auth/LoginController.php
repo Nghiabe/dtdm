@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Support\Facades\Log; // Thêm dòng này để sử dụng Log
 
 class LoginController extends Controller
 {
@@ -36,5 +37,25 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+
+    /**
+     * Override the login function to add logging.
+     */
+    public function login(Request $request)
+    {
+        Log::info('Attempting to login with email: ' . $request->email); // Log email khi đăng nhập
+
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials)) {
+            Log::info('User logged in successfully: ' . $request->email);  // Log khi thành công
+            return redirect()->intended($this->redirectTo);
+        } else {
+            Log::warning('Login failed for email: ' . $request->email);  // Log khi thất bại
+            return back()->withErrors([
+                'email' => 'The provided credentials do not match our records.',
+            ]);
+        }
     }
 }
