@@ -46,43 +46,60 @@ function add_wistlist(clicked_id){
     localStorage.setItem('data', JSON.stringify(old_data));
 
 }
-
-$(document).on('click', '.addtocart', function(event) {
-    event.preventDefault();  // Ngừng hành động mặc định của nút click
-
-    let urlCart = $(this).data('url'); // Lấy URL từ data-url của phần tử
-    let productId = $(this).data('id'); // Lấy id của sản phẩm từ data-id của phần tử
-
-    // Kiểm tra xem ID sản phẩm có hợp lệ không
-    if (!productId) {
-        alert('ID sản phẩm không hợp lệ!');
-        return;
-    }
-
+function addtocart(productId, urlCart) {
     $.ajax({
-        type: 'POST',  // Sử dụng phương thức POST
-        url: urlCart,  // URL gọi đến server
+        type: 'POST',
+        url: urlCart,
         data: {
-            _token: $('meta[name="csrf-token"]').attr('content'),  // CSRF token bảo mật
-            id: productId  // ID sản phẩm cần thêm vào giỏ hàng
+            id: productId,
+            _token: $('meta[name="csrf-token"]').attr('content')
         },
-        dataType: 'json',  // Định dạng dữ liệu trả về từ server là JSON
-        success: function(data) {
-            if (data.code === 200) {
-                alert('Sản phẩm đã được thêm vào giỏ hàng');
-            } else {
-                alert('Đã có lỗi xảy ra, vui lòng thử lại!');
-            }
+        success: function(response) {
+            alert('Thêm vào giỏ hàng thành công!');
+            // Hoặc cập nhật giao diện...
         },
-        error: function(xhr, status, error) {
-            // Xử lý lỗi kết nối
-            console.error('Error:', error);
-            console.error('Status:', status);
-            console.error('Response:', xhr.responseText);  // Hiển thị phản hồi từ server
-            alert('Lỗi kết nối, vui lòng thử lại sau!');
+        error: function(xhr) {
+            alert('Lỗi khi thêm vào giỏ hàng!');
         }
     });
-});
+}
+
+// (document).on('click', '.addtocart', function(event) {
+//     event.preventDefault();  // Ngừng hành động mặc định của nút click
+
+//     let urlCart = $(this).data('url'); // Lấy URL từ data-url của phần tử
+//     let productId = $(this).data('id'); // Lấy id của sản phẩm từ data-id của phần tử
+
+//     // Kiểm tra xem ID sản phẩm có hợp lệ không
+//     if (!productId) {
+//         alert('ID sản phẩm không hợp lệ!');
+//         return;
+//     }
+
+//     $.ajax({
+//         type: 'POST',  // Sử dụng phương thức POST
+//         url: urlCart,  // URL gọi đến server
+//         data: {
+//             _token: $('meta[name="csrf-token"]').attr('content'),  // CSRF token bảo mật
+//             id: productId  // ID sản phẩm cần thêm vào giỏ hàng
+//         },
+//         dataType: 'json',  // Định dạng dữ liệu trả về từ server là JSON
+//         success: function(data) {
+//             if (data.code === 200) {
+//                 alert('Sản phẩm đã được thêm vào giỏ hàng');
+//             } else {
+//                 alert('Đã có lỗi xảy ra, vui lòng thử lại!');
+//             }
+//         },
+//         error: function(xhr, status, error) {
+//             // Xử lý lỗi kết nối
+//             console.error('Error:', error);
+//             console.error('Status:', status);
+//             console.error('Response:', xhr.responseText);  // Hiển thị phản hồi từ server
+//             alert('Lỗi kết nối, vui lòng thử lại sau!');
+//         }
+//     });
+// });
 
 
 
@@ -92,7 +109,7 @@ $(function()
 });
 function updatecart(event){
     event.preventDefault();
-    alert(hello);
+    ale$rt(hello);
     let urlDelete = $('.cartdetete').data('url');
     let id = $(this).data('id');
   $.ajax({
