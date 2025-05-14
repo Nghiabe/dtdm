@@ -234,7 +234,7 @@ class PageController extends Controller
         'message' => 'Product added to cart successfully'
     ], 200);
 }
-public function getgiohang()
+public function getgiohang(Request $request)
 {
    $category = DB::table('category')->get();
 
