@@ -193,7 +193,7 @@ class PageController extends Controller
             'message' => 'User not authenticated'
         ], 401);
     }
-    $product_id = $id;
+    
 
     // Kiểm tra xem sản phẩm có tồn tại trong cơ sở dữ liệu không
     $product = DB::table('products')->where('product_id', $id)->first();
@@ -210,6 +210,7 @@ Log::info('This is a log message');
 
     // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
     $cart = Cart::where('user_id', $user_id)->where('product_id', $id)->first();
+    $product_id = $id;
 Log::info('Product ID: ' . $product_id);  // In ra giá trị của product_id
 
     if ($cart) {
