@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
 use DB;
 use Dotenv\Validator as DotenvValidator;
 use Session;
